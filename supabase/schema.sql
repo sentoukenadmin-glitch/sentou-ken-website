@@ -108,6 +108,19 @@ create table if not exists site_settings (
   updated_at timestamptz default now()
 );
 
+-- ---------------------------------------------------------------------------
+-- 8. TEAM MEMBERS (photos + names shown in the "Led By Experience" section
+--    of the About page, managed from /admin/team.html)
+-- ---------------------------------------------------------------------------
+create table if not exists team_members (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  role text,
+  photo_url text,
+  sort_order int default 99,
+  created_at timestamptz default now()
+);
+
 -- ============================================================================
 -- ROW LEVEL SECURITY (RLS)
 -- Rule for every table: ANYONE can read (public website needs this).
@@ -123,6 +136,7 @@ alter table announcements enable row level security;
 alter table achievements enable row level security;
 alter table reviews enable row level security;
 alter table site_settings enable row level security;
+alter table team_members enable row level security;
 
 -- Public read access (used by the public website, no login needed)
 create policy "Public can view galleries" on galleries for select using (true);
@@ -132,6 +146,7 @@ create policy "Public can view announcements" on announcements for select using 
 create policy "Public can view achievements" on achievements for select using (true);
 create policy "Public can view reviews" on reviews for select using (true);
 create policy "Public can view site settings" on site_settings for select using (true);
+create policy "Public can view team members" on team_members for select using (true);
 
 -- Authenticated (admin) write access
 create policy "Admin can insert galleries" on galleries for insert to authenticated with check (true);
@@ -161,6 +176,10 @@ create policy "Admin can delete reviews" on reviews for delete to authenticated 
 create policy "Admin can insert site settings" on site_settings for insert to authenticated with check (true);
 create policy "Admin can update site settings" on site_settings for update to authenticated using (true);
 create policy "Admin can delete site settings" on site_settings for delete to authenticated using (true);
+
+create policy "Admin can insert team members" on team_members for insert to authenticated with check (true);
+create policy "Admin can update team members" on team_members for update to authenticated using (true);
+create policy "Admin can delete team members" on team_members for delete to authenticated using (true);
 
 -- Sensible defaults for a brand-new project (safe to leave — edit them from
 -- /admin/settings.html once your site is live).
