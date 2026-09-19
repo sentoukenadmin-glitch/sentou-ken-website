@@ -90,6 +90,13 @@ That email/password combination is now how you log into `/admin/login.html`.
 - **Reviews**: add reviews (copy-paste from Google, or anywhere else) with a
   name, star rating, and the review text. The latest few appear automatically
   in a "What Our Students Say" section on the homepage.
+- **Settings**: edit the "★★★★★ 4.8 rated on Google · 31 reviews" summary line
+  shown near the top of the homepage — just two numbers, updated instantly.
+
+All of your original launch content (the first tournaments, gallery photos,
+and the Google rating number) has also been moved into this same database, so
+it's just as editable/removable as anything you add going forward — nothing
+about your site is still "stuck in code" waiting on a developer.
 
 Every section works the same way: fill in the form, click Save, it's live on
 the public website within seconds — no code, no GitHub, no waiting for a

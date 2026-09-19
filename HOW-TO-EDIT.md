@@ -117,9 +117,10 @@ no file editing at all. If you never add one, that section stays completely
 hidden, just like Announcements.
 
 The "4.8 rated on Google · 31 reviews" line near the top of the homepage is
-a separate, manually-typed summary number (it lives in `data/academy.js`
-under `googleReviews`) — update it by hand whenever your overall Google
-rating changes.
+a separate summary number from the individual reviews above — edit it from
+`/admin/settings.html` (two fields: rating and review count), no coding or
+file editing needed. `data/academy.js` still has a `googleReviews` fallback
+value that only shows for a split second before the admin-set number loads.
 
 ## Instagram On The Homepage
 
