@@ -299,6 +299,26 @@
     revealNow(container);
   }
 
+  // ---------- Members (added/edited in /admin/members.html, shown on members.html) ----------
+  async function loadMembersFromCMS() {
+    var container = document.querySelector("#cms-members-grid");
+    if (!container) return; // members.html only
+
+    var { data } = await fetchWithFallback(
+      "cms_members",
+      queryOrderedBySortOrder("members", "*", "created_at", true)
+    );
+    if (!data || !data.length) { container.innerHTML = ""; return; }
+
+    container.innerHTML = data.map(function (m) {
+      var photoHtml = m.photo_url
+        ? '<img loading="lazy" class="member-photo" src="' + esc(m.photo_url) + '" alt="' + esc(m.name) + '">'
+        : '<div class="member-photo-placeholder">Photo<br>to be added</div>';
+      return '<div class="card reveal member-row">' + photoHtml + '<h3 style="margin:0;">' + esc(m.name) + '</h3></div>';
+    }).join("");
+    revealNow(container);
+  }
+
   // ---------- Site Settings (edited in /admin/settings.html) ----------
   async function loadSiteSettingsFromCMS() {
     var el = document.querySelector("#google-rating-text");
@@ -325,5 +345,6 @@
     loadReviewsFromCMS();
     loadSiteSettingsFromCMS();
     loadTeamFromCMS();
+    loadMembersFromCMS();
   });
 })();
