@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", function () {
       .catch(function () {
         if (status) {
           status.dataset.state = "error";
-          status.textContent = "Something went wrong sending this — please call or WhatsApp us directly at 98405 40985, or try again.";
+          status.textContent = "Something went wrong sending this. If this is the very first enquiry from this site, check sentouken.admin@gmail.com (including Spam) for a one-time confirmation email from FormSubmit and click \"Confirm\" — then try again. Otherwise, please call or WhatsApp us directly at 98405 40985.";
         }
       })
       .finally(function () {
