@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /admin/
 
-Sitemap: https://www.sentoukenacademy.com/sitemap.xml
+Sitemap: https://sentoukenadmin-glitch.github.io/sentou-ken-website/sitemap.xml

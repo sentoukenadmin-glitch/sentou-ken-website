@@ -57,7 +57,7 @@ This site intentionally ships with a few things flagged so nothing unverified go
 - [ ] Add a real Google Maps embed link on `contact.html` (see comment in the file)
 - [ ] Replace gray placeholder gallery tiles with real, permission-cleared photos
 - [ ] Connect the contact form to a real backend (Formspree.io free tier is the easiest — see comment in `js/contact.js`; right now it opens the visitor's email app instead)
-- [ ] Update `sitemap.xml`, `robots.txt`, and the `<link rel="canonical">` / Open Graph tags in every page's `<head>` once you know your final domain (they currently use a placeholder `sentoukenacademy.com`)
+- [x] `sitemap.xml`, `robots.txt`, canonical and Open Graph tags now point to the real live site (`https://sentoukenadmin-glitch.github.io/sentou-ken-website/`) instead of the old placeholder domain. If you ever connect a custom domain, these all need updating again to match it.
 - [ ] Add Facebook/other social links in `data/academy.js` if applicable
 
 ## Deploying for free

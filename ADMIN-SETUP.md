@@ -43,8 +43,13 @@ returns.
 2. Open the file `supabase/schema.sql` from this project (in a text editor,
    or GitHub's editor), copy **all** of it
 3. Paste into the Supabase SQL Editor and click **Run**
-4. You should see "Success. No rows returned" — this created 5 tables, all
+4. You should see "Success. No rows returned" — this created every table, all
    the security rules, and your photo storage bucket in one step
+
+**Already set this up before and just need the new Team feature?** Run
+`supabase/migration-team.sql` instead — it only adds what's new (the Team
+table, seeded with the 5 people already shown on the About page) without
+touching anything else.
 
 ## Step 3 — Get your API keys
 
@@ -101,6 +106,11 @@ That email/password combination is now how you log into `/admin/login.html`.
   in a "What Our Students Say" section on the homepage.
 - **Settings**: edit the "★★★★★ 4.8 rated on Google · 31 reviews" summary line
   shown near the top of the homepage — just two numbers, updated instantly.
+- **Team**: add, edit, remove, or reorder the photos and names shown in the
+  "Led By Experience" section of the About page — a name and role, plus an
+  optional photo (shows "Photo to be added" until you upload one). Add a new
+  instructor here any time and they appear on the site automatically, no
+  coding needed.
 
 All of your original launch content (the first tournaments, gallery photos,
 and the Google rating number) has also been moved into this same database, so
