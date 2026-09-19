@@ -145,7 +145,7 @@ const academy = {
   // Class timings are intentionally not published on the site (academy's choice).
   programs: [
     {
-      name: "Kids Karate",
+      name: "Kids Martial Arts",
       ageRange: "6+",
       description: "Foundational karate training focused on coordination, discipline, and confidence."
     },
@@ -155,7 +155,7 @@ const academy = {
       description: "Building strength, technique, and self-defence skills through structured training."
     },
     {
-      name: "Adult Karate",
+      name: "Adult Martial Arts",
       ageRange: "Adult",
       description: "Fitness, discipline, and practical self-defence for adult students of all levels."
     }
