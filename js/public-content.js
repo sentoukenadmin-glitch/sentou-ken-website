@@ -57,16 +57,18 @@
   async function loadGalleryFromCMS() {
     var { data, error } = await supabaseClient
       .from("gallery_photos")
-      .select("photo_url, caption, category")
+      .select("photo_url, caption, category, is_portrait")
       .order("created_at", { ascending: false });
     if (error || !data || !data.length) return;
 
     data.forEach(function (p) {
-      academy.galleryPhotos.unshift({
+      var photo = {
         src: p.photo_url,
         alt: p.caption || "Academy photo",
         category: p.category || "tournaments"
-      });
+      };
+      if (p.is_portrait) photo.portrait = true;
+      academy.galleryPhotos.unshift(photo);
     });
 
     if (typeof window.renderGalleryGrid === "function") window.renderGalleryGrid();
@@ -145,11 +147,30 @@
     if (section) section.hidden = false;
   }
 
+  // ---------- Site Settings (edited in /admin/settings.html) ----------
+  async function loadSiteSettingsFromCMS() {
+    var el = document.querySelector("#google-rating-text");
+    if (!el) return; // homepage only
+
+    var { data, error } = await supabaseClient
+      .from("site_settings")
+      .select("key, value")
+      .in("key", ["google_rating", "google_review_count"]);
+    if (error || !data || !data.length) return;
+
+    var map = {};
+    data.forEach(function (row) { map[row.key] = row.value; });
+    if (map.google_rating && map.google_review_count) {
+      el.textContent = map.google_rating + " rated on Google · " + map.google_review_count + " reviews";
+    }
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
     loadTournamentsFromCMS();
     loadGalleryFromCMS();
     loadAnnouncementsFromCMS();
     loadAchievementsFromCMS();
     loadReviewsFromCMS();
+    loadSiteSettingsFromCMS();
   });
 })();
