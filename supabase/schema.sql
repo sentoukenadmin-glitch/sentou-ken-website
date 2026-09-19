@@ -66,6 +66,7 @@ create table if not exists announcements (
   announcement_date date default current_date,
   image_url text,
   is_important boolean default false,
+  sort_order int default 0,
   created_at timestamptz default now()
 );
 
@@ -81,6 +82,7 @@ create table if not exists achievements (
   medal_count int,
   student_names text,   -- optional, keep minimal — avoid publishing sensitive info
   image_url text,
+  sort_order int default 0,
   created_at timestamptz default now()
 );
 
