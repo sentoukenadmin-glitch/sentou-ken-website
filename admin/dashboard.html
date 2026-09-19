@@ -17,6 +17,7 @@
       <a href="announcements.html">Announcements</a>
       <a href="achievements.html">Achievements</a>
       <a href="reviews.html">Reviews</a>
+      <a href="team.html">Team</a>
       <a href="settings.html">Settings</a>
       <a href="#" id="admin-logout">Log out</a>
     </nav>
@@ -32,6 +33,7 @@
       <div class="admin-stat"><div class="num">—</div><div class="label">Tournaments</div></div>
       <div class="admin-stat"><div class="num">—</div><div class="label">Announcements</div></div>
       <div class="admin-stat"><div class="num">—</div><div class="label">Reviews</div></div>
+      <div class="admin-stat"><div class="num">—</div><div class="label">Team</div></div>
     </div>
 
     <div class="admin-card">
@@ -42,6 +44,7 @@
         <a class="admin-btn secondary" href="announcements.html?new=1">+ New Announcement</a>
         <a class="admin-btn secondary" href="achievements.html?new=1">+ New Achievement</a>
         <a class="admin-btn secondary" href="reviews.html?new=1">+ New Review</a>
+        <a class="admin-btn secondary" href="team.html?new=1">+ Add Team Member</a>
       </div>
     </div>
 
@@ -59,15 +62,16 @@
       var session = await requireAdminLogin();
       if (!session) return;
 
-      var [galleries, photos, tournaments, announcements, reviews] = await Promise.all([
+      var [galleries, photos, tournaments, announcements, reviews, team] = await Promise.all([
         supabaseClient.from("galleries").select("id", { count: "exact", head: true }),
         supabaseClient.from("gallery_photos").select("id", { count: "exact", head: true }),
         supabaseClient.from("tournaments").select("id", { count: "exact", head: true }),
         supabaseClient.from("announcements").select("id", { count: "exact", head: true }),
-        supabaseClient.from("reviews").select("id", { count: "exact", head: true })
+        supabaseClient.from("reviews").select("id", { count: "exact", head: true }),
+        supabaseClient.from("team_members").select("id", { count: "exact", head: true })
       ]);
 
-      var counts = [galleries.count, photos.count, tournaments.count, announcements.count, reviews.count];
+      var counts = [galleries.count, photos.count, tournaments.count, announcements.count, reviews.count, team.count];
       document.querySelectorAll("#stats-grid .num").forEach(function (el, i) {
         el.textContent = counts[i] != null ? counts[i] : "0";
       });

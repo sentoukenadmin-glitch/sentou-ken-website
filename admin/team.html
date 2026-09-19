@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Team | Sentou-Ken Admin</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+  <header class="admin-header">
+    <div class="brand">Sentou-Ken <span>Admin</span></div>
+    <nav class="admin-nav">
+      <a href="dashboard.html">Dashboard</a>
+      <a href="galleries.html">Galleries</a>
+      <a href="tournaments.html">Tournaments</a>
+      <a href="announcements.html">Announcements</a>
+      <a href="achievements.html">Achievements</a>
+      <a href="reviews.html">Reviews</a>
+      <a href="team.html" class="active">Team</a>
+      <a href="settings.html">Settings</a>
+      <a href="#" id="admin-logout">Log out</a>
+    </nav>
+  </header>
+
+  <main class="admin-container">
+    <h1 class="admin-title">Team</h1>
+    <p class="admin-subtitle">Photos and names shown in the "Led By Experience" section of the About page. Add, edit, remove or reorder anyone here — it updates the website automatically, no coding needed.</p>
+    <div id="page-message"></div>
+
+    <div class="admin-card">
+      <h2 id="form-heading" style="margin-top:0; font-size:1.1rem;">New Team Member</h2>
+      <form id="tm-form">
+        <input type="hidden" id="tm-id">
+        <div class="admin-field">
+          <label for="tm-name">Name</label>
+          <input type="text" id="tm-name" required placeholder="e.g. Sempai Shashank">
+        </div>
+        <div class="admin-field">
+          <label for="tm-role">Role / Title</label>
+          <input type="text" id="tm-role" placeholder="e.g. Instructor">
+        </div>
+        <div class="admin-field">
+          <label for="tm-order">Display Order</label>
+          <input type="number" id="tm-order" min="0" placeholder="Lower numbers show first (e.g. 1, 2, 3…)">
+        </div>
+        <div class="admin-field">
+          <label for="tm-photo">Photo (optional — shows "Photo to be added" until one is uploaded)</label>
+          <input type="file" id="tm-photo" accept="image/jpeg,image/png,image/webp">
+          <div class="admin-photo-grid" id="tm-preview"></div>
+        </div>
+
+        <div style="display:flex; gap:10px;">
+          <button type="submit" class="admin-btn" id="save-btn">Save Team Member</button>
+          <button type="button" class="admin-btn secondary" id="cancel-edit" style="display:none;">Cancel</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="admin-card">
+      <h2 style="margin-top:0; font-size:1.1rem;">Current Team</h2>
+      <div id="tm-list"><p class="admin-subtitle">Loading…</p></div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase-config.js"></script>
+  <script src="js/admin-auth.js"></script>
+  <script src="js/admin-upload.js"></script>
+  <script>
+    var editingId = null;
+    var pendingFile = null;
+    var existingImageUrl = null;
+
+    function showMessage(text, type) {
+      document.getElementById("page-message").innerHTML = '<div class="admin-message ' + type + '">' + text + '</div>';
+      window.scrollTo(0, 0);
+    }
+
+    function renderPreview() {
+      var grid = document.getElementById("tm-preview");
+      grid.innerHTML = "";
+      var src = pendingFile ? URL.createObjectURL(pendingFile) : existingImageUrl;
+      if (!src) return;
+      grid.innerHTML = '<div class="admin-photo-thumb"><img src="' + src + '" alt=""></div>';
+    }
+    document.getElementById("tm-photo").addEventListener("change", function (e) {
+      pendingFile = e.target.files[0] || null;
+      renderPreview();
+    });
+
+    function resetForm() {
+      editingId = null;
+      pendingFile = null;
+      existingImageUrl = null;
+      document.getElementById("tm-form").reset();
+      document.getElementById("form-heading").textContent = "New Team Member";
+      document.getElementById("cancel-edit").style.display = "none";
+      renderPreview();
+    }
+    document.getElementById("cancel-edit").addEventListener("click", resetForm);
+
+    async function loadTeam() {
+      var { data, error } = await supabaseClient.from("team_members").select("*").order("sort_order", { ascending: true });
+      var list = document.getElementById("tm-list");
+      if (error) { list.innerHTML = '<p class="admin-message error">' + error.message + '</p>'; return; }
+      if (!data || data.length === 0) {
+        list.innerHTML = '<p class="admin-empty">No team members added yet.</p>';
+        return;
+      }
+      list.innerHTML = '<table class="admin-table"><thead><tr><th>Order</th><th>Name</th><th>Role</th><th></th><th></th></tr></thead><tbody>' +
+        data.map(function (m) {
+          return "<tr><td>" + (m.sort_order != null ? m.sort_order : "—") + "</td><td>" + m.name + "</td><td>" + (m.role || "—") + "</td>" +
+            '<td class="row-actions"><button class="admin-btn secondary" data-edit="' + m.id + '">Edit</button></td>' +
+            '<td class="row-actions"><button class="admin-btn danger" data-delete="' + m.id + '">Delete</button></td></tr>';
+        }).join("") + "</tbody></table>";
+
+      list.querySelectorAll("[data-edit]").forEach(function (btn) {
+        btn.addEventListener("click", function () { editItem(btn.getAttribute("data-edit"), data); });
+      });
+      list.querySelectorAll("[data-delete]").forEach(function (btn) {
+        btn.addEventListener("click", function () { deleteItem(btn.getAttribute("data-delete")); });
+      });
+    }
+
+    function editItem(id, allData) {
+      var m = allData.filter(function (x) { return x.id === id; })[0];
+      editingId = id;
+      pendingFile = null;
+      existingImageUrl = m.photo_url;
+      document.getElementById("tm-name").value = m.name || "";
+      document.getElementById("tm-role").value = m.role || "";
+      document.getElementById("tm-order").value = m.sort_order != null ? m.sort_order : "";
+      document.getElementById("form-heading").textContent = "Edit Team Member";
+      document.getElementById("cancel-edit").style.display = "inline-flex";
+      renderPreview();
+      window.scrollTo(0, 0);
+    }
+
+    async function deleteItem(id) {
+      if (!confirm("Remove this team member from the site?")) return;
+      await supabaseClient.from("team_members").delete().eq("id", id);
+      showMessage("Team member removed.", "success");
+      loadTeam();
+    }
+
+    document.getElementById("tm-form").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      var saveBtn = document.getElementById("save-btn");
+      saveBtn.disabled = true;
+      saveBtn.textContent = "Saving…";
+
+      try {
+        var imageUrl = existingImageUrl;
+        if (pendingFile) {
+          saveBtn.textContent = "Uploading photo…";
+          var uploaded = await uploadPhotoToStorage(pendingFile, "team");
+          imageUrl = uploaded.url;
+        }
+
+        var payload = {
+          name: document.getElementById("tm-name").value.trim(),
+          role: document.getElementById("tm-role").value.trim(),
+          sort_order: document.getElementById("tm-order").value ? parseInt(document.getElementById("tm-order").value, 10) : 99,
+          photo_url: imageUrl
+        };
+
+        if (editingId) {
+          var { error } = await supabaseClient.from("team_members").update(payload).eq("id", editingId);
+          if (error) throw error;
+        } else {
+          var { error: insertError } = await supabaseClient.from("team_members").insert(payload);
+          if (insertError) throw insertError;
+        }
+
+        showMessage("Team member saved successfully.", "success");
+        resetForm();
+        loadTeam();
+      } catch (err) {
+        showMessage("Something went wrong: " + err.message, "error");
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = "Save Team Member";
+      }
+    });
+
+    (async function () {
+      var session = await requireAdminLogin();
+      if (!session) return;
+      loadTeam();
+      if (new URLSearchParams(location.search).has("new")) document.getElementById("tm-name").focus();
+    })();
+  </script>
+</body>
+</html>
