@@ -17,6 +17,7 @@
       <a href="announcements.html">Announcements</a>
       <a href="achievements.html">Achievements</a>
       <a href="reviews.html">Reviews</a>
+      <a href="settings.html">Settings</a>
       <a href="#" id="admin-logout">Log out</a>
     </nav>
   </header>
@@ -49,6 +50,22 @@
           <textarea id="g-desc" placeholder="Short description shown with the gallery"></textarea>
         </div>
 
+        <div class="admin-field-row">
+          <div class="admin-field">
+            <label for="g-photo-category">Category (for photos added below)</label>
+            <select id="g-photo-category">
+              <option value="training">Training</option>
+              <option value="tournaments" selected>Tournaments</option>
+              <option value="belt-exams">Belt Exams</option>
+              <option value="camps">Camps</option>
+            </select>
+          </div>
+          <div class="admin-field" style="display:flex; align-items:flex-end; padding-bottom:8px;">
+            <label style="display:flex; align-items:center; gap:6px; font-weight:400;">
+              <input type="checkbox" id="g-photo-portrait" style="width:auto;"> Tall/narrow photo (show uncropped)
+            </label>
+          </div>
+        </div>
         <div class="admin-field">
           <label>Photos</label>
           <input type="file" id="g-photos" accept="image/jpeg,image/png,image/webp" multiple>
@@ -231,7 +248,8 @@
           await supabaseClient.from("gallery_photos").insert({
             gallery_id: galleryId,
             photo_url: uploaded.url,
-            category: "tournaments"
+            category: document.getElementById("g-photo-category").value,
+            is_portrait: document.getElementById("g-photo-portrait").checked
           });
         }
 

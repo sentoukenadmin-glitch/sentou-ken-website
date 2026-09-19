@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Settings | Sentou-Ken Admin</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+  <header class="admin-header">
+    <div class="brand">Sentou-Ken <span>Admin</span></div>
+    <nav class="admin-nav">
+      <a href="dashboard.html">Dashboard</a>
+      <a href="galleries.html">Galleries</a>
+      <a href="tournaments.html">Tournaments</a>
+      <a href="announcements.html">Announcements</a>
+      <a href="achievements.html">Achievements</a>
+      <a href="reviews.html">Reviews</a>
+      <a href="settings.html" class="active">Settings</a>
+      <a href="#" id="admin-logout">Log out</a>
+    </nav>
+  </header>
+
+  <main class="admin-container">
+    <h1 class="admin-title">Settings</h1>
+    <p class="admin-subtitle">Site-wide numbers that appear on the homepage — update them here any time, no coding needed.</p>
+    <div id="page-message"></div>
+
+    <div class="admin-card">
+      <h2 style="margin-top:0; font-size:1.1rem;">Google Rating Summary</h2>
+      <p class="admin-subtitle">This is the "★★★★★ 4.8 rated on Google · 31 reviews" line shown near the top of the homepage. It's a single manually-set summary — separate from the individual reviews you add on the Reviews page. Update it whenever your overall Google rating changes.</p>
+      <form id="settings-form">
+        <div class="admin-field-row">
+          <div class="admin-field">
+            <label for="s-rating">Overall Rating (out of 5)</label>
+            <input type="number" id="s-rating" min="0" max="5" step="0.1" required placeholder="e.g. 4.8">
+          </div>
+          <div class="admin-field">
+            <label for="s-count">Number of Reviews</label>
+            <input type="number" id="s-count" min="0" step="1" required placeholder="e.g. 31">
+          </div>
+        </div>
+        <button type="submit" class="admin-btn" id="save-btn">Save Settings</button>
+      </form>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase-config.js"></script>
+  <script src="js/admin-auth.js"></script>
+  <script>
+    function showMessage(text, type) {
+      document.getElementById("page-message").innerHTML = '<div class="admin-message ' + type + '">' + text + '</div>';
+      window.scrollTo(0, 0);
+    }
+
+    async function loadSettings() {
+      var { data, error } = await supabaseClient
+        .from("site_settings")
+        .select("key, value")
+        .in("key", ["google_rating", "google_review_count"]);
+      if (error || !data) return;
+      data.forEach(function (row) {
+        if (row.key === "google_rating") document.getElementById("s-rating").value = row.value;
+        if (row.key === "google_review_count") document.getElementById("s-count").value = row.value;
+      });
+    }
+
+    document.getElementById("settings-form").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      var saveBtn = document.getElementById("save-btn");
+      saveBtn.disabled = true;
+      saveBtn.textContent = "Saving…";
+
+      try {
+        var rows = [
+          { key: "google_rating", value: document.getElementById("s-rating").value.trim() },
+          { key: "google_review_count", value: document.getElementById("s-count").value.trim() }
+        ];
+        var { error } = await supabaseClient.from("site_settings").upsert(rows, { onConflict: "key" });
+        if (error) throw error;
+        showMessage("Settings saved — the homepage will show the new numbers within seconds.", "success");
+      } catch (err) {
+        showMessage("Something went wrong: " + err.message, "error");
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = "Save Settings";
+      }
+    });
+
+    (async function () {
+      var session = await requireAdminLogin();
+      if (!session) return;
+      loadSettings();
+    })();
+  </script>
+</body>
+</html>
