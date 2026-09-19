@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gallery | Sentou-Ken Martial Arts Academy, Chennai</title>
+  <meta name="description" content="Photo gallery of training sessions, belt exams, camps and tournaments at Sentou-Ken Martial Arts Academy, Chennai.">
+  <link rel="canonical" href="https://www.sentoukenacademy.com/gallery.html">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Gallery | Sentou-Ken Martial Arts Academy, Chennai">
+  <meta property="og:description" content="Photo gallery of training sessions, belt exams, camps and tournaments at Sentou-Ken Martial Arts Academy, Chennai.">
+  <meta property="og:image" content="images/logo/og-banner.png">
+  <meta property="og:locale" content="en_IN">
+  <link rel="icon" href="favicon/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <link rel="stylesheet" href="css/cursor.css">
+  <style>
+    .filter-bar { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-bottom: var(--space-4); }
+    .filter-btn {
+      font-family: var(--font-display); font-size:0.78rem; letter-spacing:0.08em; text-transform:uppercase;
+      background:transparent; border:1px solid var(--line); color:var(--bone-dim); padding:8px 16px; cursor:pointer;
+    }
+    .filter-btn[aria-pressed="true"] { background: var(--crimson); border-color: var(--crimson); color:#fff; }
+  </style>
+  <noscript><style>.reveal{opacity:1 !important; transform:none !important;}</style></noscript>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="container">
+      <span>10 Gandhi Street, Sudharsan Nagar, Madambakkam Main Rd, Madambakkam, Chennai (Near Jayam Supermarket)</span>
+      <a href="tel:+919840540985">98405 40985</a>
+    </div>
+  </div>
+
+  <header class="site-header">
+    <nav class="nav container">
+      <a class="brand" href="index.html">
+        <img src="images/logo/logo.png" alt="Sentou-Ken Martial Arts Academy emblem">
+        <span class="brand-text">Sentou-Ken<span>Martial Arts Academy</span></span>
+      </a>
+      <button class="nav-toggle" aria-expanded="false" aria-controls="primary-nav">Menu</button>
+      <ul class="nav-links" id="primary-nav">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="classes.html">Classes</a></li>
+        <li><a href="achievements.html">Achievements</a></li>
+        <li><a href="tournaments.html">Tournaments</a></li>
+        <li><a href="gallery.html" aria-current="page">Gallery</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <section style="padding-bottom: var(--space-3);">
+      <div class="container">
+        <div class="eyebrow">Life At The Dojo</div>
+        <h1>Gallery</h1>
+        <div class="belt-divider left"></div>
+        <p style="max-width:60ch;">Karate, Judo, Jujutsu, Kenjutsu, and more — training sessions, certifications, camps and tournaments from across the academy.</p>
+      </div>
+    </section>
+
+    <section style="padding-top:0;">
+      <div class="container">
+        <div class="filter-bar">
+          <button class="filter-btn" data-filter="all" aria-pressed="true">All</button>
+          <button class="filter-btn" data-filter="training" aria-pressed="false">Training</button>
+          <button class="filter-btn" data-filter="belt-exams" aria-pressed="false">Certifications</button>
+          <button class="filter-btn" data-filter="tournaments" aria-pressed="false">Tournaments</button>
+          <button class="filter-btn" data-filter="camps" aria-pressed="false">Camps &amp; Seminars</button>
+        </div>
+
+        <div class="gallery-grid" id="gallery-grid">
+          <!-- Photos are inserted here automatically from data/academy.js (galleryPhotos list) — see js/gallery.js -->
+        </div>
+        <noscript>
+          <p style="text-align:center; margin-top: var(--space-3);">Photos require JavaScript to display here. Please view our <a href="https://www.instagram.com/sentouken_martial_arts_academy/" target="_blank" rel="noopener">Instagram</a> for photos in the meantime.</p>
+        </noscript>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <h4>Sentou-Ken Martial Arts Academy</h4>
+          <p style="max-width: 32ch;">10 Gandhi Street, Sudharsan Nagar, Madambakkam Main Rd, Madambakkam, Chennai (Near Jayam Supermarket)</p>
+        </div>
+        <div>
+          <h4>Quick Links</h4>
+          <ul class="footer-links">
+            <li><a href="achievements.html">Achievements</a></li>
+            <li><a href="tournaments.html">Tournaments</a></li>
+            <li><a href="classes.html">Classes</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Connect</h4>
+          <ul class="footer-links">
+            <li><a href="tel:+919840540985">98405 40985</a></li>
+            <li><a href="mailto:sentouken.admin@gmail.com">sentouken.admin@gmail.com</a></li>
+            <li><a href="https://www.youtube.com/@Best-Karate_Dojo_in_Chennai" target="_blank" rel="noopener">YouTube</a></li>
+            <li><a href="https://www.instagram.com/sentouken_martial_arts_academy/" target="_blank" rel="noopener">Instagram</a></li>
+            <li><a href="https://www.facebook.com/share/1DWXNr6Q5r/" target="_blank" rel="noopener">Facebook</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; <span data-current-year></span> Sentou-Ken Martial Arts Academy, Chennai.</span>
+        <span>Discipline · Respect · Self-Defence</span>
+      </div>
+    </div>
+  </footer>
+
+  <a class="whatsapp-fab" href="https://wa.me/919677246635" target="_blank" rel="noopener" aria-label="Chat on WhatsApp">WA</a>
+
+  <script src="data/academy.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/cursor.js"></script>
+  <script src="js/gallery.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-config.js"></script>
+  <script src="js/public-content.js"></script>
+</body>
+</html>
