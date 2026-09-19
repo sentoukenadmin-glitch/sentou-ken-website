@@ -114,6 +114,24 @@
     container.querySelectorAll(".reveal").forEach(function (el) { el.classList.add("is-visible"); });
   }
 
+  // Orders by sort_order first (set from the admin panel's Move Up/Down
+  // buttons). If this Supabase project hasn't had the one-time
+  // supabase/migration-add-sort-order.sql run yet, that column won't exist
+  // on every table — in that case this quietly falls back to the original
+  // ordering instead of breaking the section.
+  async function queryOrderedBySortOrder(table, selectCols, fallbackCol, fallbackAscending, limit) {
+    var withSortQuery = supabaseClient.from(table).select(selectCols)
+      .order("sort_order", { ascending: true })
+      .order(fallbackCol, { ascending: fallbackAscending });
+    if (limit) withSortQuery = withSortQuery.limit(limit);
+    var withSort = await withSortQuery;
+    if (!withSort.error) return withSort;
+
+    var fallbackQuery = supabaseClient.from(table).select(selectCols).order(fallbackCol, { ascending: fallbackAscending });
+    if (limit) fallbackQuery = fallbackQuery.limit(limit);
+    return await fallbackQuery;
+  }
+
   function starString(rating) {
     var n = Math.max(0, Math.min(5, parseInt(rating, 10) || 0));
     return "★★★★★".slice(0, n) + "☆☆☆☆☆".slice(0, 5 - n);
@@ -145,9 +163,15 @@
   }
 
   async function loadGalleryFromCMS() {
+    // Ordered by sort_order (set from /admin/galleries.html's Move Up/Down
+    // buttons) so photos appear in the order the admin arranged them, not
+    // upload order. created_at is only a tiebreaker for photos that were
+    // never explicitly reordered (identical sort_order).
     var { data } = await fetchWithFallback(
       "cms_gallery_photos",
-      supabaseClient.from("gallery_photos").select("photo_url, caption, category, is_portrait").order("created_at", { ascending: false })
+      supabaseClient.from("gallery_photos").select("photo_url, caption, category, is_portrait, sort_order")
+        .order("sort_order", { ascending: true })
+        .order("created_at", { ascending: true })
     );
     if (!data || !data.length) return;
 
@@ -158,7 +182,7 @@
         category: p.category || "tournaments"
       };
       if (p.is_portrait) photo.portrait = true;
-      academy.galleryPhotos.unshift(photo);
+      academy.galleryPhotos.push(photo);
     });
 
     if (typeof window.renderGalleryGrid === "function") window.renderGalleryGrid();
@@ -170,7 +194,7 @@
 
     var { data } = await fetchWithFallback(
       "cms_announcements",
-      supabaseClient.from("announcements").select("*").order("announcement_date", { ascending: false }).limit(3)
+      queryOrderedBySortOrder("announcements", "*", "announcement_date", false, 3)
     );
     if (!data || !data.length) return; // stays hidden — zero visual change if no announcements
 
@@ -192,7 +216,7 @@
 
     var { data } = await fetchWithFallback(
       "cms_achievements",
-      supabaseClient.from("achievements").select("*").order("created_at", { ascending: false })
+      queryOrderedBySortOrder("achievements", "*", "created_at", false)
     );
     if (!data || !data.length) return; // stays hidden — zero visual change if none added yet
 
