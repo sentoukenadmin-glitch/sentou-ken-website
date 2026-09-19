@@ -1,0 +1,37 @@
+name: Keep Supabase Awake
+
+# WHY THIS EXISTS: Supabase's free tier pauses a project after 7 days with
+# ZERO visits of any kind. A paused project isn't broken or deleted — it just
+# needs its first request after a pause to "wake it up" (a couple of seconds
+# slower), and everything works normally after that. This workflow makes a
+# tiny, harmless request to the database every 3 days — well inside that
+# 7-day window — so a real website with visitors basically never needs to
+# rely on the wake-up delay, and a site with almost no traffic still never
+# goes stale.
+#
+# NOTE: GitHub automatically disables a repository's SCHEDULED workflows
+# after 60 days with no commits/activity in the repo at all. That's a very
+# different, much longer timeframe than Supabase's 7-day pause, and doesn't
+# affect the live website either way — but if this repo is ever left
+# completely untouched (no edits, no commits) for 2+ months, re-enable this
+# workflow from the "Actions" tab on GitHub (or push any small commit).
+#
+# This is a backup safety net, not the only one: js/public-content.js also
+# caches the last successfully loaded content in each visitor's browser, so
+# even a rare failed request doesn't show an empty page to a returning
+# visitor.
+
+on:
+  schedule:
+    - cron: "0 3 */3 * *" # every 3 days at 03:00 UTC
+  workflow_dispatch: {} # lets you trigger it manually from the Actions tab to test it
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping the Supabase database
+        run: |
+          curl --fail --silent --show-error \
+            "https://wookdrzqutibhrukehoe.supabase.co/rest/v1/site_settings?select=key&limit=1" \
+            -H "apikey: sb_publishable_GMW4wHOvPk1OHkp00dIZLw_iev9ppCV"
