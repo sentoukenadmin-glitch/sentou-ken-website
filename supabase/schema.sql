@@ -32,6 +32,7 @@ create table if not exists gallery_photos (
   photo_url text not null,
   caption text,
   category text default 'tournaments', -- training | tournaments | belt-exams | camps
+  is_portrait boolean default false, -- true = tall/narrow image, shown uncropped
   sort_order int default 0,
   created_at timestamptz default now()
 );
@@ -96,6 +97,17 @@ create table if not exists reviews (
   created_at timestamptz default now()
 );
 
+-- ---------------------------------------------------------------------------
+-- 7. SITE SETTINGS (single editable values with no natural table of their
+--    own — currently just the homepage's "X rated on Google · Y reviews"
+--    summary line, edited from /admin/settings.html)
+-- ---------------------------------------------------------------------------
+create table if not exists site_settings (
+  key text primary key,
+  value text,
+  updated_at timestamptz default now()
+);
+
 -- ============================================================================
 -- ROW LEVEL SECURITY (RLS)
 -- Rule for every table: ANYONE can read (public website needs this).
@@ -110,6 +122,7 @@ alter table tournaments enable row level security;
 alter table announcements enable row level security;
 alter table achievements enable row level security;
 alter table reviews enable row level security;
+alter table site_settings enable row level security;
 
 -- Public read access (used by the public website, no login needed)
 create policy "Public can view galleries" on galleries for select using (true);
@@ -118,6 +131,7 @@ create policy "Public can view tournaments" on tournaments for select using (tru
 create policy "Public can view announcements" on announcements for select using (true);
 create policy "Public can view achievements" on achievements for select using (true);
 create policy "Public can view reviews" on reviews for select using (true);
+create policy "Public can view site settings" on site_settings for select using (true);
 
 -- Authenticated (admin) write access
 create policy "Admin can insert galleries" on galleries for insert to authenticated with check (true);
@@ -143,6 +157,17 @@ create policy "Admin can delete achievements" on achievements for delete to auth
 create policy "Admin can insert reviews" on reviews for insert to authenticated with check (true);
 create policy "Admin can update reviews" on reviews for update to authenticated using (true);
 create policy "Admin can delete reviews" on reviews for delete to authenticated using (true);
+
+create policy "Admin can insert site settings" on site_settings for insert to authenticated with check (true);
+create policy "Admin can update site settings" on site_settings for update to authenticated using (true);
+create policy "Admin can delete site settings" on site_settings for delete to authenticated using (true);
+
+-- Sensible defaults for a brand-new project (safe to leave — edit them from
+-- /admin/settings.html once your site is live).
+insert into site_settings (key, value) values
+  ('google_rating', '5.0'),
+  ('google_review_count', '0')
+on conflict (key) do nothing;
 
 -- ============================================================================
 -- STORAGE (photo uploads)
