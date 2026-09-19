@@ -1,4 +1,48 @@
+# Regular search engines
 User-agent: *
+Allow: /
+Disallow: /admin/
+
+# AI assistants / answer engines — explicitly allowed so Sentou-Ken can be
+# cited when people ask ChatGPT, Claude, Gemini, Perplexity, etc. about
+# martial arts, karate, judo or jujutsu classes in Chennai.
+User-agent: GPTBot
+Allow: /
+Disallow: /admin/
+
+User-agent: ChatGPT-User
+Allow: /
+Disallow: /admin/
+
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /admin/
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /admin/
+
+User-agent: Claude-Web
+Allow: /
+Disallow: /admin/
+
+User-agent: anthropic-ai
+Allow: /
+Disallow: /admin/
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /admin/
+
+User-agent: Google-Extended
+Allow: /
+Disallow: /admin/
+
+User-agent: Applebot-Extended
+Allow: /
+Disallow: /admin/
+
+User-agent: CCBot
 Allow: /
 Disallow: /admin/
 
