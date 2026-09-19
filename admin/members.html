@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: https://wookdrzqutibhrukehoe.supabase.co; connect-src 'self' https://wookdrzqutibhrukehoe.supabase.co; base-uri 'self'; object-src 'none'; form-action 'self'">
-<title>Team | Sentou-Ken Admin</title>
+<title>Members | Sentou-Ken Admin</title>
 <meta name="robots" content="noindex, nofollow">
 <link rel="stylesheet" href="css/admin.css">
 </head>
@@ -18,50 +18,43 @@
       <a href="announcements.html">Announcements</a>
       <a href="achievements.html">Achievements</a>
       <a href="reviews.html">Reviews</a>
-      <a href="team.html" class="active">Team</a>
-      <a href="members.html">Members</a>
+      <a href="team.html">Team</a>
+      <a href="members.html" class="active">Members</a>
       <a href="settings.html">Settings</a>
       <a href="#" id="admin-logout">Log out</a>
     </nav>
   </header>
 
   <main class="admin-container">
-    <h1 class="admin-title">Team</h1>
-    <p class="admin-subtitle">Photos and names shown in the "Led By Experience" section of the About page. Add, edit, remove or reorder anyone here — it updates the website automatically, no coding needed.</p>
+    <h1 class="admin-title">Members</h1>
+    <p class="admin-subtitle">The photo + name directory shown on the public Members page (separate from the "Led By Experience" Team section on About). Add, edit, remove or reorder anyone here — it updates the website automatically, no coding needed.</p>
     <div id="page-message"></div>
 
     <div class="admin-card">
-      <h2 id="form-heading" style="margin-top:0; font-size:1.1rem;">New Team Member</h2>
-      <form id="tm-form">
-        <input type="hidden" id="tm-id">
+      <h2 id="form-heading" style="margin-top:0; font-size:1.1rem;">New Member</h2>
+      <form id="m-form">
+        <input type="hidden" id="m-id">
         <div class="admin-field">
-          <label for="tm-name">Name</label>
-          <input type="text" id="tm-name" required placeholder="e.g. Sempai Shashank">
+          <label for="m-name">Name</label>
+          <input type="text" id="m-name" required placeholder="e.g. Arun Kumar">
         </div>
         <div class="admin-field">
-          <label for="tm-role">Role / Title</label>
-          <input type="text" id="tm-role" placeholder="e.g. Instructor">
-        </div>
-        <div class="admin-field">
-          <label for="tm-order">Display Order</label>
-          <input type="number" id="tm-order" min="0" placeholder="Lower numbers show first (e.g. 1, 2, 3…)">
-        </div>
-        <div class="admin-field">
-          <label for="tm-photo">Photo (optional — shows "Photo to be added" until one is uploaded)</label>
-          <input type="file" id="tm-photo" accept="image/jpeg,image/png,image/webp">
-          <div class="admin-photo-grid" id="tm-preview"></div>
+          <label for="m-photo">Photo (optional — shows "Photo to be added" until one is uploaded)</label>
+          <input type="file" id="m-photo" accept="image/jpeg,image/png,image/webp">
+          <div class="admin-photo-grid" id="m-preview"></div>
         </div>
 
         <div style="display:flex; gap:10px;">
-          <button type="submit" class="admin-btn" id="save-btn">Save Team Member</button>
+          <button type="submit" class="admin-btn" id="save-btn">Save Member</button>
           <button type="button" class="admin-btn secondary" id="cancel-edit" style="display:none;">Cancel</button>
         </div>
       </form>
     </div>
 
     <div class="admin-card">
-      <h2 style="margin-top:0; font-size:1.1rem;">Current Team</h2>
-      <div id="tm-list"><p class="admin-subtitle">Loading…</p></div>
+      <h2 style="margin-top:0; font-size:1.1rem;">Current Members</h2>
+      <p class="admin-subtitle">Use the arrows to set the order they appear in on the public Members page.</p>
+      <div id="m-list"><p class="admin-subtitle">Loading…</p></div>
     </div>
   </main>
 
@@ -74,6 +67,7 @@
     var editingId = null;
     var pendingFile = null;
     var existingImageUrl = null;
+    var membersTableMissing = false; // true if supabase/migration-members.sql hasn't been run yet
 
     function showMessage(text, type) {
       document.getElementById("page-message").innerHTML = '<div class="admin-message ' + type + '">' + text + '</div>';
@@ -81,13 +75,13 @@
     }
 
     function renderPreview() {
-      var grid = document.getElementById("tm-preview");
+      var grid = document.getElementById("m-preview");
       grid.innerHTML = "";
       var src = pendingFile ? URL.createObjectURL(pendingFile) : existingImageUrl;
       if (!src) return;
       grid.innerHTML = '<div class="admin-photo-thumb"><img src="' + src + '" alt=""></div>';
     }
-    document.getElementById("tm-photo").addEventListener("change", function (e) {
+    document.getElementById("m-photo").addEventListener("change", function (e) {
       pendingFile = e.target.files[0] || null;
       renderPreview();
     });
@@ -96,24 +90,36 @@
       editingId = null;
       pendingFile = null;
       existingImageUrl = null;
-      document.getElementById("tm-form").reset();
-      document.getElementById("form-heading").textContent = "New Team Member";
+      document.getElementById("m-form").reset();
+      document.getElementById("form-heading").textContent = "New Member";
       document.getElementById("cancel-edit").style.display = "none";
       renderPreview();
     }
     document.getElementById("cancel-edit").addEventListener("click", resetForm);
 
-    async function loadTeam() {
-      var { data, error } = await supabaseClient.from("team_members").select("*").order("sort_order", { ascending: true });
-      var list = document.getElementById("tm-list");
-      if (error) { list.innerHTML = '<p class="admin-message error">' + error.message + '</p>'; return; }
-      if (!data || data.length === 0) {
-        list.innerHTML = '<p class="admin-empty">No team members added yet.</p>';
+    async function loadMembers() {
+      var { data, error } = await supabaseClient.from("members").select("*")
+        .order("sort_order", { ascending: true }).order("created_at", { ascending: true });
+      var list = document.getElementById("m-list");
+
+      if (error) {
+        // Table doesn't exist yet on this project — the one-time migration hasn't been run.
+        membersTableMissing = true;
+        list.innerHTML = '<p class="admin-message info">The Members feature needs a one-time setup step: run supabase/migration-members.sql once in your Supabase SQL Editor, then refresh this page.</p>';
+        document.getElementById("save-btn").disabled = true;
         return;
       }
-      list.innerHTML = '<table class="admin-table"><thead><tr><th>Order</th><th>Name</th><th>Role</th><th></th><th></th></tr></thead><tbody>' +
+      membersTableMissing = false;
+      document.getElementById("save-btn").disabled = false;
+
+      if (!data || data.length === 0) {
+        list.innerHTML = '<p class="admin-empty">No members added yet — add your first one above.</p>';
+        return;
+      }
+      list.innerHTML = '<table class="admin-table"><thead><tr><th></th><th></th><th>Name</th><th></th><th></th></tr></thead><tbody>' +
         data.map(function (m, idx) {
-          return "<tr><td class=\"row-actions\">" + reorderButtonsHtml(idx, data.length) + "</td><td>" + m.name + "</td><td>" + (m.role || "—") + "</td>" +
+          var thumb = m.photo_url ? '<img src="' + m.photo_url + '" alt="" style="width:44px; height:44px; object-fit:cover; border-radius:4px; border:1px solid var(--admin-border); display:block;">' : '—';
+          return "<tr><td class=\"row-actions\">" + reorderButtonsHtml(idx, data.length) + "</td><td>" + thumb + "</td><td>" + m.name + "</td>" +
             '<td class="row-actions"><button class="admin-btn secondary" data-edit="' + m.id + '">Edit</button></td>' +
             '<td class="row-actions"><button class="admin-btn danger" data-delete="' + m.id + '">Delete</button></td></tr>';
         }).join("") + "</tbody></table>";
@@ -124,7 +130,7 @@
       list.querySelectorAll("[data-delete]").forEach(function (btn) {
         btn.addEventListener("click", function () { deleteItem(btn.getAttribute("data-delete")); });
       });
-      wireReorderButtons(list, "team_members", data, loadTeam);
+      wireReorderButtons(list, "members", data, loadMembers);
     }
 
     function editItem(id, allData) {
@@ -132,24 +138,23 @@
       editingId = id;
       pendingFile = null;
       existingImageUrl = m.photo_url;
-      document.getElementById("tm-name").value = m.name || "";
-      document.getElementById("tm-role").value = m.role || "";
-      document.getElementById("tm-order").value = m.sort_order != null ? m.sort_order : "";
-      document.getElementById("form-heading").textContent = "Edit Team Member";
+      document.getElementById("m-name").value = m.name || "";
+      document.getElementById("form-heading").textContent = "Edit Member";
       document.getElementById("cancel-edit").style.display = "inline-flex";
       renderPreview();
       window.scrollTo(0, 0);
     }
 
     async function deleteItem(id) {
-      if (!confirm("Remove this team member from the site?")) return;
-      await supabaseClient.from("team_members").delete().eq("id", id);
-      showMessage("Team member removed.", "success");
-      loadTeam();
+      if (!confirm("Remove this member from the site?")) return;
+      await supabaseClient.from("members").delete().eq("id", id);
+      showMessage("Member removed.", "success");
+      loadMembers();
     }
 
-    document.getElementById("tm-form").addEventListener("submit", async function (e) {
+    document.getElementById("m-form").addEventListener("submit", async function (e) {
       e.preventDefault();
+      if (membersTableMissing) return;
       var saveBtn = document.getElementById("save-btn");
       saveBtn.disabled = true;
       saveBtn.textContent = "Saving…";
@@ -158,41 +163,42 @@
         var imageUrl = existingImageUrl;
         if (pendingFile) {
           saveBtn.textContent = "Uploading photo…";
-          var uploaded = await uploadPhotoToStorage(pendingFile, "team");
+          var uploaded = await uploadPhotoToStorage(pendingFile, "members");
           imageUrl = uploaded.url;
         }
 
         var payload = {
-          name: document.getElementById("tm-name").value.trim(),
-          role: document.getElementById("tm-role").value.trim(),
-          sort_order: document.getElementById("tm-order").value ? parseInt(document.getElementById("tm-order").value, 10) : 99,
+          name: document.getElementById("m-name").value.trim(),
           photo_url: imageUrl
         };
 
         if (editingId) {
-          var { error } = await supabaseClient.from("team_members").update(payload).eq("id", editingId);
+          var { error } = await supabaseClient.from("members").update(payload).eq("id", editingId);
           if (error) throw error;
         } else {
-          var { error: insertError } = await supabaseClient.from("team_members").insert(payload);
+          // New members go to the end of the current order, not the front
+          var { data: existing } = await supabaseClient.from("members").select("sort_order");
+          payload.sort_order = nextSortOrder(existing || []);
+          var { error: insertError } = await supabaseClient.from("members").insert(payload);
           if (insertError) throw insertError;
         }
 
-        showMessage("Team member saved successfully.", "success");
+        showMessage("Member saved successfully.", "success");
         resetForm();
-        loadTeam();
+        loadMembers();
       } catch (err) {
         showMessage("Something went wrong: " + err.message, "error");
       } finally {
         saveBtn.disabled = false;
-        saveBtn.textContent = "Save Team Member";
+        saveBtn.textContent = "Save Member";
       }
     });
 
     (async function () {
       var session = await requireAdminLogin();
       if (!session) return;
-      loadTeam();
-      if (new URLSearchParams(location.search).has("new")) document.getElementById("tm-name").focus();
+      loadMembers();
+      if (new URLSearchParams(location.search).has("new")) document.getElementById("m-name").focus();
     })();
   </script>
 </body>
