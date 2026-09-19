@@ -3,17 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://wookdrzqutibhrukehoe.supabase.co; connect-src 'self' https://wookdrzqutibhrukehoe.supabase.co https://formsubmit.co; frame-src https://www.youtube-nocookie.com https://www.google.com; form-action 'self' https://formsubmit.co; base-uri 'self'; object-src 'none'">
-  <title>Achievements &amp; Medals | Best Karate Academy in Chennai — Sentou-Ken</title>
-  <meta name="description" content="Championship results, medals and awards won by students of Sentou-Ken, one of Chennai's best karate and martial arts academies — 25+ years, 25,000+ students trained.">
-  <link rel="canonical" href="https://sentoukenadmin-glitch.github.io/sentou-ken-website/achievements.html">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://wookdrzqutibhrukehoe.supabase.co; connect-src 'self' https://wookdrzqutibhrukehoe.supabase.co https://formsubmit.co; frame-src https://www.youtube-nocookie.com https://www.google.com; form-action 'self'; base-uri 'self'; object-src 'none'">
+  <title>Members | Sentou-Ken Martial Arts Academy, Chennai</title>
+  <meta name="description" content="Meet the students and members of Sentou-Ken Martial Arts Academy, Chennai.">
+  <link rel="canonical" href="https://sentoukenadmin-glitch.github.io/sentou-ken-website/members.html">
 
   <!-- Open Graph -->
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Achievements & Medals | Best Karate Academy in Chennai — Sentou-Ken">
-  <meta property="og:description" content="Championship results, medals and awards won by students of Sentou-Ken Martial Arts Academy, Chennai.">
+  <meta property="og:title" content="Members | Sentou-Ken Martial Arts Academy, Chennai">
+  <meta property="og:description" content="Meet the students and members of Sentou-Ken Martial Arts Academy, Chennai.">
   <meta property="og:image" content="https://sentoukenadmin-glitch.github.io/sentou-ken-website/images/logo/og-banner.png">
-  <meta property="og:url" content="https://sentoukenadmin-glitch.github.io/sentou-ken-website/achievements.html">
+  <meta property="og:url" content="https://sentoukenadmin-glitch.github.io/sentou-ken-website/members.html">
   <meta property="og:locale" content="en_IN">
   <link rel="icon" href="favicon/favicon.ico">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -23,6 +23,12 @@
   <link rel="stylesheet" href="css/components.css">
   <link rel="stylesheet" href="css/responsive.css">
   <link rel="stylesheet" href="css/cursor.css">
+  <style>
+    .member-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--space-3); }
+    .member-row { display:flex; align-items:center; gap:16px; }
+    .member-photo { width:70px; height:70px; object-fit:cover; border:1px solid var(--line); flex-shrink:0; }
+    .member-photo-placeholder { width:70px; height:70px; background:var(--charcoal); border:1px solid var(--line); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:0.65rem; color:var(--bone-dim); text-align:center; }
+  </style>
   <noscript><style>.reveal{opacity:1 !important; transform:none !important;}</style></noscript>
 </head>
 <body>
@@ -45,67 +51,33 @@
         <li><a href="index.html">Home</a></li>
         <li><a href="about.html">About</a></li>
         <li><a href="classes.html">Classes</a></li>
-        <li><a href="achievements.html" aria-current="page">Achievements</a></li>
+        <li><a href="achievements.html">Achievements</a></li>
         <li><a href="tournaments.html">Tournaments</a></li>
         <li><a href="gallery.html">Gallery</a></li>
-        <li><a href="members.html">Members</a></li>
+        <li><a href="members.html" aria-current="page">Members</a></li>
         <li><a href="contact.html">Contact</a></li>
       </ul>
     </nav>
   </header>
 
   <main>
-    <section style="padding-bottom: var(--space-4);">
+    <section style="padding-bottom: var(--space-3);">
       <div class="container">
-        <div class="eyebrow">Achievements</div>
-        <h1>Recognised On The Mat</h1>
+        <div class="eyebrow">Our Academy</div>
+        <h1>Members</h1>
         <div class="belt-divider left"></div>
-        <p style="max-width:60ch;">Every stripe and medal reflects hours of discipline on the mat. Here's where our students have made the academy proud.</p>
+        <p style="max-width:60ch;">Meet the students and members of Sentou-Ken Martial Arts Academy.</p>
       </div>
     </section>
 
-    <section class="section-alt">
+    <section style="padding-top:0;">
       <div class="container">
-        <div class="stat-grid" style="grid-template-columns: repeat(3, 1fr);">
-          <div class="stat"><span class="value" data-count="25" data-dynamic="years-since-founding">25</span><span class="label">Years Since Founding</span></div>
-          <div class="stat"><span class="value">25,000+</span><span class="label">Students Trained by Our Founder</span></div>
-          <div class="stat"><span class="value" data-count="3">3</span><span class="label">Branches</span></div>
-        </div>
-      </div>
-    </section>
-
-    <section>
-      <div class="container section-head reveal" id="featured-result-heading">
-        <div class="eyebrow">Latest Result</div>
-        <h2 id="featured-result-title">Loading…</h2>
-        <div class="belt-divider"></div>
-      </div>
-      <div class="container">
-        <div class="card reveal" id="featured-result-card" style="max-width: 640px; margin: 0 auto;">
+        <div class="member-grid" id="cms-members-grid">
+          <!-- Members are inserted here automatically from the admin panel (/admin/members.html) — see js/public-content.js -->
         </div>
         <noscript>
-          <p style="text-align:center;">Latest tournament results require JavaScript to display here. Please call or WhatsApp us at 98405 40985 for results in the meantime.</p>
+          <p style="text-align:center; margin-top: var(--space-3);">This page requires JavaScript to display the member list.</p>
         </noscript>
-      </div>
-    </section>
-
-    <!-- ============ RECOGNITIONS (only visible once the admin adds one via /admin/achievements.html — stays hidden, zero layout impact, otherwise) ============ -->
-    <section hidden>
-      <div class="container section-head reveal">
-        <div class="eyebrow">Recognitions</div>
-        <h2>Awards &amp; Titles</h2>
-        <div class="belt-divider"></div>
-      </div>
-      <div class="container">
-        <div class="card-grid" id="cms-achievements-grid"></div>
-      </div>
-    </section>
-
-    <section class="section-alt" style="text-align:center;">
-      <div class="container">
-        <h2>See Full Tournament History</h2>
-        <div class="belt-divider"></div>
-        <a class="btn btn-primary" href="tournaments.html">View Tournaments</a>
       </div>
     </section>
   </main>
@@ -120,9 +92,9 @@
         <div>
           <h4>Quick Links</h4>
           <ul class="footer-links">
-            <li><a href="classes.html">Classes</a></li>
+            <li><a href="achievements.html">Achievements</a></li>
             <li><a href="tournaments.html">Tournaments</a></li>
-            <li><a href="gallery.html">Gallery</a></li>
+            <li><a href="classes.html">Classes</a></li>
             <li><a href="contact.html">Contact</a></li>
           </ul>
         </div>
@@ -149,7 +121,6 @@
   <script src="data/academy.js"></script>
   <script src="js/main.js"></script>
   <script src="js/cursor.js"></script>
-  <script src="js/tournaments.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-config.js"></script>
   <script src="js/public-content.js"></script>
