@@ -264,7 +264,7 @@
 
     container.innerHTML = data.map(function (m) {
       var photoHtml = m.photo_url
-        ? '<img loading="lazy" src="' + esc(m.photo_url) + '" alt="' + esc(m.name) + '" style="width:110px; height:110px; object-fit:cover; border:1px solid var(--line); flex-shrink:0;">'
+        ? '<img loading="lazy" src="' + esc(m.photo_url) + '" alt="' + esc(m.name) + '" style="width:110px; height:110px; object-fit:cover; object-position: top center; border:1px solid var(--line); flex-shrink:0;">'
         : '<div style="width:110px; height:110px; background:var(--charcoal); border:1px solid var(--line); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:0.7rem; color:var(--bone-dim); text-align:center;">Photo<br>to be added</div>';
       return '<div class="card reveal" style="display:flex; gap:var(--space-3); align-items:flex-start;">' +
         photoHtml +
