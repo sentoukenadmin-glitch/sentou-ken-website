@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Login | Sentou-Ken Academy</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+  <div class="admin-login-wrap">
+    <div class="admin-login-logo">
+      <img src="../images/logo/logo.png" alt="Sentou-Ken Academy">
+    </div>
+    <div class="admin-card">
+      <h1 class="admin-title" style="text-align:center;">Academy Admin</h1>
+      <p class="admin-subtitle" style="text-align:center;">Sign in to manage galleries, tournaments &amp; announcements</p>
+      <div id="login-message"></div>
+      <form id="login-form">
+        <div class="admin-field">
+          <label for="email">Email</label>
+          <input type="email" id="email" required autocomplete="username">
+        </div>
+        <div class="admin-field">
+          <label for="password">Password</label>
+          <input type="password" id="password" required autocomplete="current-password">
+        </div>
+        <button type="submit" class="admin-btn" style="width:100%; justify-content:center;">Sign In</button>
+      </form>
+    </div>
+    <p style="text-align:center; font-size:0.8rem; color:#57606A;">
+      Not the academy administrator? <a href="../index.html">Return to the main website</a>
+    </p>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase-config.js"></script>
+  <script src="js/admin-auth.js"></script>
+  <script>
+    (async function () {
+      await redirectIfAlreadyLoggedIn();
+      var form = document.getElementById("login-form");
+      if (!form) return; // Supabase isn't configured — the warning message already replaced the page
+
+      form.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        var msg = document.getElementById("login-message");
+        var email = document.getElementById("email").value.trim();
+        var password = document.getElementById("password").value;
+        msg.innerHTML = '<div class="admin-message info">Signing in…</div>';
+
+        var result = await adminLogin(email, password);
+        if (result.error) {
+          msg.innerHTML = '<div class="admin-message error">' + result.error.message + '</div>';
+        } else {
+          window.location.href = "dashboard.html";
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

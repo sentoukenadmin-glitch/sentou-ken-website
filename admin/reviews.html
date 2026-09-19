@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reviews | Sentou-Ken Admin</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+  <header class="admin-header">
+    <div class="brand">Sentou-Ken <span>Admin</span></div>
+    <nav class="admin-nav">
+      <a href="dashboard.html">Dashboard</a>
+      <a href="galleries.html">Galleries</a>
+      <a href="tournaments.html">Tournaments</a>
+      <a href="announcements.html">Announcements</a>
+      <a href="achievements.html">Achievements</a>
+      <a href="reviews.html" class="active">Reviews</a>
+      <a href="#" id="admin-logout">Log out</a>
+    </nav>
+  </header>
+
+  <main class="admin-container">
+    <h1 class="admin-title">Reviews</h1>
+    <p class="admin-subtitle">Add reviews from Google (or elsewhere) here — the latest ones appear automatically in the "What Our Students Say" section on the homepage.</p>
+    <div id="page-message"></div>
+
+    <div class="admin-card">
+      <h2 id="form-heading" style="margin-top:0; font-size:1.1rem;">New Review</h2>
+      <form id="r-form">
+        <input type="hidden" id="r-id">
+        <div class="admin-field-row">
+          <div class="admin-field">
+            <label for="r-name">Reviewer Name</label>
+            <input type="text" id="r-name" required placeholder="e.g. Priya S.">
+          </div>
+          <div class="admin-field">
+            <label for="r-rating">Rating</label>
+            <select id="r-rating">
+              <option value="5">★★★★★ (5)</option>
+              <option value="4">★★★★☆ (4)</option>
+              <option value="3">★★★☆☆ (3)</option>
+              <option value="2">★★☆☆☆ (2)</option>
+              <option value="1">★☆☆☆☆ (1)</option>
+            </select>
+          </div>
+        </div>
+        <div class="admin-field">
+          <label for="r-text">Review Text</label>
+          <textarea id="r-text" placeholder="Copy-paste the review text here"></textarea>
+        </div>
+        <div class="admin-field-row">
+          <div class="admin-field">
+            <label for="r-date">Date</label>
+            <input type="date" id="r-date">
+          </div>
+          <div class="admin-field">
+            <label for="r-source">Source</label>
+            <input type="text" id="r-source" value="Google" placeholder="e.g. Google">
+          </div>
+        </div>
+
+        <div style="display:flex; gap:10px;">
+          <button type="submit" class="admin-btn" id="save-btn">Save Review</button>
+          <button type="button" class="admin-btn secondary" id="cancel-edit" style="display:none;">Cancel</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="admin-card">
+      <h2 style="margin-top:0; font-size:1.1rem;">Existing Reviews</h2>
+      <div id="r-list"><p class="admin-subtitle">Loading…</p></div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase-config.js"></script>
+  <script src="js/admin-auth.js"></script>
+  <script>
+    var editingId = null;
+
+    function showMessage(text, type) {
+      document.getElementById("page-message").innerHTML = '<div class="admin-message ' + type + '">' + text + '</div>';
+      window.scrollTo(0, 0);
+    }
+
+    function stars(n) {
+      n = parseInt(n, 10) || 0;
+      return "★★★★★".slice(0, n) + "☆☆☆☆☆".slice(0, 5 - n);
+    }
+
+    function resetForm() {
+      editingId = null;
+      document.getElementById("r-form").reset();
+      document.getElementById("r-source").value = "Google";
+      document.getElementById("form-heading").textContent = "New Review";
+      document.getElementById("cancel-edit").style.display = "none";
+    }
+    document.getElementById("cancel-edit").addEventListener("click", resetForm);
+
+    async function loadReviews() {
+      var { data, error } = await supabaseClient.from("reviews").select("*").order("review_date", { ascending: false });
+      var list = document.getElementById("r-list");
+      if (error) { list.innerHTML = '<p class="admin-message error">' + error.message + '</p>'; return; }
+      if (!data || data.length === 0) {
+        list.innerHTML = '<p class="admin-empty">No reviews added yet — add your first one above.</p>';
+        return;
+      }
+      list.innerHTML = '<table class="admin-table"><thead><tr><th>Reviewer</th><th>Rating</th><th>Date</th><th></th><th></th></tr></thead><tbody>' +
+        data.map(function (r) {
+          return "<tr><td>" + r.reviewer_name + "</td><td>" + stars(r.rating) + "</td><td>" + (r.review_date || "—") + "</td>" +
+            '<td class="row-actions"><button class="admin-btn secondary" data-edit="' + r.id + '">Edit</button></td>' +
+            '<td class="row-actions"><button class="admin-btn danger" data-delete="' + r.id + '">Delete</button></td></tr>';
+        }).join("") + "</tbody></table>";
+
+      list.querySelectorAll("[data-edit]").forEach(function (btn) {
+        btn.addEventListener("click", function () { editItem(btn.getAttribute("data-edit"), data); });
+      });
+      list.querySelectorAll("[data-delete]").forEach(function (btn) {
+        btn.addEventListener("click", function () { deleteItem(btn.getAttribute("data-delete")); });
+      });
+    }
+
+    function editItem(id, allData) {
+      var r = allData.filter(function (x) { return x.id === id; })[0];
+      editingId = id;
+      document.getElementById("r-name").value = r.reviewer_name || "";
+      document.getElementById("r-rating").value = r.rating || 5;
+      document.getElementById("r-text").value = r.review_text || "";
+      document.getElementById("r-date").value = r.review_date || "";
+      document.getElementById("r-source").value = r.source || "Google";
+      document.getElementById("form-heading").textContent = "Edit Review";
+      document.getElementById("cancel-edit").style.display = "inline-flex";
+      window.scrollTo(0, 0);
+    }
+
+    async function deleteItem(id) {
+      if (!confirm("Delete this review?")) return;
+      await supabaseClient.from("reviews").delete().eq("id", id);
+      showMessage("Review deleted.", "success");
+      loadReviews();
+    }
+
+    document.getElementById("r-form").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      var saveBtn = document.getElementById("save-btn");
+      saveBtn.disabled = true;
+      saveBtn.textContent = "Saving…";
+
+      try {
+        var payload = {
+          reviewer_name: document.getElementById("r-name").value.trim(),
+          rating: parseInt(document.getElementById("r-rating").value, 10),
+          review_text: document.getElementById("r-text").value.trim(),
+          review_date: document.getElementById("r-date").value || null,
+          source: document.getElementById("r-source").value.trim() || "Google"
+        };
+
+        if (editingId) {
+          var { error } = await supabaseClient.from("reviews").update(payload).eq("id", editingId);
+          if (error) throw error;
+        } else {
+          var { error: insertError } = await supabaseClient.from("reviews").insert(payload);
+          if (insertError) throw insertError;
+        }
+
+        showMessage("Review saved successfully.", "success");
+        resetForm();
+        loadReviews();
+      } catch (err) {
+        showMessage("Something went wrong: " + err.message, "error");
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = "Save Review";
+      }
+    });
+
+    (async function () {
+      var session = await requireAdminLogin();
+      if (!session) return;
+      loadReviews();
+      if (new URLSearchParams(location.search).has("new")) document.getElementById("r-name").focus();
+    })();
+  </script>
+</body>
+</html>

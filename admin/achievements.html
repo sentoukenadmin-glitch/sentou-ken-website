@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Achievements | Sentou-Ken Admin</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+  <header class="admin-header">
+    <div class="brand">Sentou-Ken <span>Admin</span></div>
+    <nav class="admin-nav">
+      <a href="dashboard.html">Dashboard</a>
+      <a href="galleries.html">Galleries</a>
+      <a href="tournaments.html">Tournaments</a>
+      <a href="announcements.html">Announcements</a>
+      <a href="achievements.html" class="active">Achievements</a>
+      <a href="reviews.html">Reviews</a>
+      <a href="#" id="admin-logout">Log out</a>
+    </nav>
+  </header>
+
+  <main class="admin-container">
+    <h1 class="admin-title">Achievements</h1>
+    <p class="admin-subtitle">Standalone recognitions not tied to a specific tournament — e.g. an award or title. For tournament medal counts, use the Tournaments page instead.</p>
+    <div id="page-message"></div>
+
+    <div class="admin-card">
+      <h2 id="form-heading" style="margin-top:0; font-size:1.1rem;">New Achievement</h2>
+      <form id="ac-form">
+        <input type="hidden" id="ac-id">
+        <div class="admin-field">
+          <label for="ac-title">Title</label>
+          <input type="text" id="ac-title" required placeholder="e.g. Rotary Club Vocational Excellence Award">
+        </div>
+        <div class="admin-field-row">
+          <div class="admin-field">
+            <label for="ac-year">Year</label>
+            <input type="text" id="ac-year" placeholder="e.g. 2023">
+          </div>
+          <div class="admin-field">
+            <label for="ac-medals">Medal Count (if applicable)</label>
+            <input type="number" id="ac-medals" min="0">
+          </div>
+        </div>
+        <div class="admin-field">
+          <label for="ac-result">Result / Description</label>
+          <textarea id="ac-result"></textarea>
+        </div>
+        <div class="admin-field">
+          <label for="ac-students">Student Name(s) — optional, keep minimal for privacy</label>
+          <input type="text" id="ac-students" placeholder="Only add if appropriate to publish">
+        </div>
+        <div class="admin-field">
+          <label for="ac-image">Photo (optional)</label>
+          <input type="file" id="ac-image" accept="image/jpeg,image/png,image/webp">
+          <div class="admin-photo-grid" id="ac-preview"></div>
+        </div>
+
+        <div style="display:flex; gap:10px;">
+          <button type="submit" class="admin-btn" id="save-btn">Save Achievement</button>
+          <button type="button" class="admin-btn secondary" id="cancel-edit" style="display:none;">Cancel</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="admin-card">
+      <h2 style="margin-top:0; font-size:1.1rem;">Existing Achievements</h2>
+      <div id="ac-list"><p class="admin-subtitle">Loading…</p></div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase-config.js"></script>
+  <script src="js/admin-auth.js"></script>
+  <script src="js/admin-upload.js"></script>
+  <script>
+    var editingId = null;
+    var pendingFile = null;
+    var existingImageUrl = null;
+
+    function showMessage(text, type) {
+      document.getElementById("page-message").innerHTML = '<div class="admin-message ' + type + '">' + text + '</div>';
+      window.scrollTo(0, 0);
+    }
+
+    function renderPreview() {
+      var grid = document.getElementById("ac-preview");
+      grid.innerHTML = "";
+      var src = pendingFile ? URL.createObjectURL(pendingFile) : existingImageUrl;
+      if (!src) return;
+      grid.innerHTML = '<div class="admin-photo-thumb"><img src="' + src + '" alt=""></div>';
+    }
+    document.getElementById("ac-image").addEventListener("change", function (e) {
+      pendingFile = e.target.files[0] || null;
+      renderPreview();
+    });
+
+    function resetForm() {
+      editingId = null;
+      pendingFile = null;
+      existingImageUrl = null;
+      document.getElementById("ac-form").reset();
+      document.getElementById("form-heading").textContent = "New Achievement";
+      document.getElementById("cancel-edit").style.display = "none";
+      renderPreview();
+    }
+    document.getElementById("cancel-edit").addEventListener("click", resetForm);
+
+    async function loadAchievements() {
+      var { data, error } = await supabaseClient.from("achievements").select("*").order("created_at", { ascending: false });
+      var list = document.getElementById("ac-list");
+      if (error) { list.innerHTML = '<p class="admin-message error">' + error.message + '</p>'; return; }
+      if (!data || data.length === 0) {
+        list.innerHTML = '<p class="admin-empty">No achievements added yet.</p>';
+        return;
+      }
+      list.innerHTML = '<table class="admin-table"><thead><tr><th>Title</th><th>Year</th><th></th><th></th></tr></thead><tbody>' +
+        data.map(function (a) {
+          return "<tr><td>" + a.title + "</td><td>" + (a.year || "—") + "</td>" +
+            '<td class="row-actions"><button class="admin-btn secondary" data-edit="' + a.id + '">Edit</button></td>' +
+            '<td class="row-actions"><button class="admin-btn danger" data-delete="' + a.id + '">Delete</button></td></tr>';
+        }).join("") + "</tbody></table>";
+
+      list.querySelectorAll("[data-edit]").forEach(function (btn) {
+        btn.addEventListener("click", function () { editItem(btn.getAttribute("data-edit"), data); });
+      });
+      list.querySelectorAll("[data-delete]").forEach(function (btn) {
+        btn.addEventListener("click", function () { deleteItem(btn.getAttribute("data-delete")); });
+      });
+    }
+
+    function editItem(id, allData) {
+      var a = allData.filter(function (x) { return x.id === id; })[0];
+      editingId = id;
+      pendingFile = null;
+      existingImageUrl = a.image_url;
+      document.getElementById("ac-title").value = a.title || "";
+      document.getElementById("ac-year").value = a.year || "";
+      document.getElementById("ac-medals").value = a.medal_count || "";
+      document.getElementById("ac-result").value = a.result || "";
+      document.getElementById("ac-students").value = a.student_names || "";
+      document.getElementById("form-heading").textContent = "Edit Achievement";
+      document.getElementById("cancel-edit").style.display = "inline-flex";
+      renderPreview();
+      window.scrollTo(0, 0);
+    }
+
+    async function deleteItem(id) {
+      if (!confirm("Delete this achievement?")) return;
+      await supabaseClient.from("achievements").delete().eq("id", id);
+      showMessage("Achievement deleted.", "success");
+      loadAchievements();
+    }
+
+    document.getElementById("ac-form").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      var saveBtn = document.getElementById("save-btn");
+      saveBtn.disabled = true;
+      saveBtn.textContent = "Saving…";
+
+      try {
+        var imageUrl = existingImageUrl;
+        if (pendingFile) {
+          saveBtn.textContent = "Uploading image…";
+          var uploaded = await uploadPhotoToStorage(pendingFile, "achievements");
+          imageUrl = uploaded.url;
+        }
+
+        var payload = {
+          title: document.getElementById("ac-title").value.trim(),
+          year: document.getElementById("ac-year").value.trim(),
+          medal_count: document.getElementById("ac-medals").value ? parseInt(document.getElementById("ac-medals").value, 10) : null,
+          result: document.getElementById("ac-result").value.trim(),
+          student_names: document.getElementById("ac-students").value.trim(),
+          image_url: imageUrl
+        };
+
+        if (editingId) {
+          var { error } = await supabaseClient.from("achievements").update(payload).eq("id", editingId);
+          if (error) throw error;
+        } else {
+          var { error: insertError } = await supabaseClient.from("achievements").insert(payload);
+          if (insertError) throw insertError;
+        }
+
+        showMessage("Achievement saved successfully.", "success");
+        resetForm();
+        loadAchievements();
+      } catch (err) {
+        showMessage("Something went wrong: " + err.message, "error");
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = "Save Achievement";
+      }
+    });
+
+    (async function () {
+      var session = await requireAdminLogin();
+      if (!session) return;
+      loadAchievements();
+      if (new URLSearchParams(location.search).has("new")) document.getElementById("ac-title").focus();
+    })();
+  </script>
+</body>
+</html>

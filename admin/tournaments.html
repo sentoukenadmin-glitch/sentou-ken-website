@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tournaments | Sentou-Ken Admin</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+  <header class="admin-header">
+    <div class="brand">Sentou-Ken <span>Admin</span></div>
+    <nav class="admin-nav">
+      <a href="dashboard.html">Dashboard</a>
+      <a href="galleries.html">Galleries</a>
+      <a href="tournaments.html" class="active">Tournaments</a>
+      <a href="announcements.html">Announcements</a>
+      <a href="achievements.html">Achievements</a>
+      <a href="reviews.html">Reviews</a>
+      <a href="#" id="admin-logout">Log out</a>
+    </nav>
+  </header>
+
+  <main class="admin-container">
+    <h1 class="admin-title">Tournaments</h1>
+    <p class="admin-subtitle">These appear automatically on the public Tournaments and Achievements pages</p>
+    <div id="page-message"></div>
+
+    <div class="admin-card">
+      <h2 id="form-heading" style="margin-top:0; font-size:1.1rem;">New Tournament</h2>
+      <form id="t-form">
+        <input type="hidden" id="t-id">
+        <div class="admin-field">
+          <label for="t-title">Tournament Name</label>
+          <input type="text" id="t-title" required placeholder="e.g. 29th All India Shitoryu Karate-Do Championship">
+        </div>
+        <div class="admin-field-row">
+          <div class="admin-field">
+            <label for="t-label">Label (shown as a small tag)</label>
+            <input type="text" id="t-label" placeholder="e.g. National — 2026">
+          </div>
+          <div class="admin-field">
+            <label for="t-datevenue">Date &amp; Venue</label>
+            <input type="text" id="t-datevenue" placeholder="e.g. 24–26 July 2026 · Mysuru">
+          </div>
+        </div>
+        <div class="admin-field-row">
+          <div class="admin-field">
+            <label for="t-students">Students Competed</label>
+            <input type="number" id="t-students" min="0">
+          </div>
+          <div class="admin-field">
+            <label style="display:flex; align-items:center; gap:8px; margin-top: 26px;">
+              <input type="checkbox" id="t-featured" style="width:auto;"> Show as "Latest Result" on Achievements page
+            </label>
+          </div>
+        </div>
+        <div class="admin-field-row" style="grid-template-columns: 1fr 1fr 1fr;">
+          <div class="admin-field">
+            <label for="t-gold">Gold Medals</label>
+            <input type="number" id="t-gold" min="0" value="0">
+          </div>
+          <div class="admin-field">
+            <label for="t-silver">Silver Medals</label>
+            <input type="number" id="t-silver" min="0" value="0">
+          </div>
+          <div class="admin-field">
+            <label for="t-bronze">Bronze Medals</label>
+            <input type="number" id="t-bronze" min="0" value="0">
+          </div>
+        </div>
+        <div class="admin-field">
+          <label for="t-notes">Notes (optional — for events without a medal count, like seminars)</label>
+          <textarea id="t-notes"></textarea>
+        </div>
+
+        <div style="display:flex; gap:10px;">
+          <button type="submit" class="admin-btn" id="save-btn">Save Tournament</button>
+          <button type="button" class="admin-btn secondary" id="cancel-edit" style="display:none;">Cancel</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="admin-card">
+      <h2 style="margin-top:0; font-size:1.1rem;">Existing Tournaments</h2>
+      <div id="t-list"><p class="admin-subtitle">Loading…</p></div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase-config.js"></script>
+  <script src="js/admin-auth.js"></script>
+  <script>
+    var editingId = null;
+
+    function showMessage(text, type) {
+      document.getElementById("page-message").innerHTML = '<div class="admin-message ' + type + '">' + text + '</div>';
+      window.scrollTo(0, 0);
+    }
+
+    function resetForm() {
+      editingId = null;
+      document.getElementById("t-form").reset();
+      document.getElementById("form-heading").textContent = "New Tournament";
+      document.getElementById("cancel-edit").style.display = "none";
+    }
+    document.getElementById("cancel-edit").addEventListener("click", resetForm);
+
+    async function loadTournaments() {
+      var { data, error } = await supabaseClient.from("tournaments").select("*").order("created_at", { ascending: false });
+      var list = document.getElementById("t-list");
+      if (error) { list.innerHTML = '<p class="admin-message error">' + error.message + '</p>'; return; }
+      if (!data || data.length === 0) {
+        list.innerHTML = '<p class="admin-empty">No tournaments added yet.</p>';
+        return;
+      }
+      list.innerHTML = '<table class="admin-table"><thead><tr><th>Title</th><th>Medals (G/S/B)</th><th></th><th></th></tr></thead><tbody>' +
+        data.map(function (t) {
+          return "<tr><td>" + t.title + (t.featured ? ' <span class="admin-badge featured">Featured</span>' : "") + "</td>" +
+            "<td>" + (t.medals_gold || 0) + " / " + (t.medals_silver || 0) + " / " + (t.medals_bronze || 0) + "</td>" +
+            '<td class="row-actions"><button class="admin-btn secondary" data-edit="' + t.id + '">Edit</button></td>' +
+            '<td class="row-actions"><button class="admin-btn danger" data-delete="' + t.id + '">Delete</button></td></tr>';
+        }).join("") + "</tbody></table>";
+
+      list.querySelectorAll("[data-edit]").forEach(function (btn) {
+        btn.addEventListener("click", function () { editTournament(btn.getAttribute("data-edit"), data); });
+      });
+      list.querySelectorAll("[data-delete]").forEach(function (btn) {
+        btn.addEventListener("click", function () { deleteTournament(btn.getAttribute("data-delete")); });
+      });
+    }
+
+    function editTournament(id, allData) {
+      var t = allData.filter(function (x) { return x.id === id; })[0];
+      editingId = id;
+      document.getElementById("t-title").value = t.title || "";
+      document.getElementById("t-label").value = t.eyebrow_label || "";
+      document.getElementById("t-datevenue").value = t.date_venue || "";
+      document.getElementById("t-students").value = t.students_competed || "";
+      document.getElementById("t-featured").checked = !!t.featured;
+      document.getElementById("t-gold").value = t.medals_gold || 0;
+      document.getElementById("t-silver").value = t.medals_silver || 0;
+      document.getElementById("t-bronze").value = t.medals_bronze || 0;
+      document.getElementById("t-notes").value = t.notes || "";
+      document.getElementById("form-heading").textContent = "Edit Tournament";
+      document.getElementById("cancel-edit").style.display = "inline-flex";
+      window.scrollTo(0, 0);
+    }
+
+    async function deleteTournament(id) {
+      if (!confirm("Delete this tournament?")) return;
+      await supabaseClient.from("tournaments").delete().eq("id", id);
+      showMessage("Tournament deleted.", "success");
+      loadTournaments();
+    }
+
+    document.getElementById("t-form").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      var saveBtn = document.getElementById("save-btn");
+      saveBtn.disabled = true;
+      saveBtn.textContent = "Saving…";
+
+      try {
+        var payload = {
+          title: document.getElementById("t-title").value.trim(),
+          eyebrow_label: document.getElementById("t-label").value.trim(),
+          date_venue: document.getElementById("t-datevenue").value.trim(),
+          students_competed: document.getElementById("t-students").value ? parseInt(document.getElementById("t-students").value, 10) : null,
+          featured: document.getElementById("t-featured").checked,
+          medals_gold: parseInt(document.getElementById("t-gold").value || 0, 10),
+          medals_silver: parseInt(document.getElementById("t-silver").value || 0, 10),
+          medals_bronze: parseInt(document.getElementById("t-bronze").value || 0, 10),
+          notes: document.getElementById("t-notes").value.trim()
+        };
+
+        // If this one is set as featured, un-feature all others first (only one at a time)
+        if (payload.featured) {
+          await supabaseClient.from("tournaments").update({ featured: false }).neq("id", editingId || "00000000-0000-0000-0000-000000000000");
+        }
+
+        if (editingId) {
+          var { error } = await supabaseClient.from("tournaments").update(payload).eq("id", editingId);
+          if (error) throw error;
+        } else {
+          var { error: insertError } = await supabaseClient.from("tournaments").insert(payload);
+          if (insertError) throw insertError;
+        }
+
+        showMessage("Tournament saved successfully.", "success");
+        resetForm();
+        loadTournaments();
+      } catch (err) {
+        showMessage("Something went wrong: " + err.message, "error");
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = "Save Tournament";
+      }
+    });
+
+    (async function () {
+      var session = await requireAdminLogin();
+      if (!session) return;
+      loadTournaments();
+      if (new URLSearchParams(location.search).has("new")) document.getElementById("t-title").focus();
+    })();
+  </script>
+</body>
+</html>

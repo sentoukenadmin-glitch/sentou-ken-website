@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard | Sentou-Ken Admin</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+  <header class="admin-header">
+    <div class="brand">Sentou-Ken <span>Admin</span></div>
+    <nav class="admin-nav">
+      <a href="dashboard.html" class="active">Dashboard</a>
+      <a href="galleries.html">Galleries</a>
+      <a href="tournaments.html">Tournaments</a>
+      <a href="announcements.html">Announcements</a>
+      <a href="achievements.html">Achievements</a>
+      <a href="reviews.html">Reviews</a>
+      <a href="#" id="admin-logout">Log out</a>
+    </nav>
+  </header>
+
+  <main class="admin-container">
+    <h1 class="admin-title">Dashboard</h1>
+    <p class="admin-subtitle">Overview of your academy's content</p>
+
+    <div class="admin-stats-grid" id="stats-grid">
+      <div class="admin-stat"><div class="num">—</div><div class="label">Galleries</div></div>
+      <div class="admin-stat"><div class="num">—</div><div class="label">Photos</div></div>
+      <div class="admin-stat"><div class="num">—</div><div class="label">Tournaments</div></div>
+      <div class="admin-stat"><div class="num">—</div><div class="label">Announcements</div></div>
+      <div class="admin-stat"><div class="num">—</div><div class="label">Reviews</div></div>
+    </div>
+
+    <div class="admin-card">
+      <h2 style="margin-top:0; font-size:1.1rem;">Quick Actions</h2>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <a class="admin-btn" href="galleries.html?new=1">+ New Gallery</a>
+        <a class="admin-btn secondary" href="tournaments.html?new=1">+ New Tournament</a>
+        <a class="admin-btn secondary" href="announcements.html?new=1">+ New Announcement</a>
+        <a class="admin-btn secondary" href="achievements.html?new=1">+ New Achievement</a>
+        <a class="admin-btn secondary" href="reviews.html?new=1">+ New Review</a>
+      </div>
+    </div>
+
+    <div class="admin-card">
+      <h2 style="margin-top:0; font-size:1.1rem;">Recent Tournaments</h2>
+      <div id="recent-tournaments"><p class="admin-subtitle">Loading…</p></div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase-config.js"></script>
+  <script src="js/admin-auth.js"></script>
+  <script>
+    (async function () {
+      var session = await requireAdminLogin();
+      if (!session) return;
+
+      var [galleries, photos, tournaments, announcements, reviews] = await Promise.all([
+        supabaseClient.from("galleries").select("id", { count: "exact", head: true }),
+        supabaseClient.from("gallery_photos").select("id", { count: "exact", head: true }),
+        supabaseClient.from("tournaments").select("id", { count: "exact", head: true }),
+        supabaseClient.from("announcements").select("id", { count: "exact", head: true }),
+        supabaseClient.from("reviews").select("id", { count: "exact", head: true })
+      ]);
+
+      var counts = [galleries.count, photos.count, tournaments.count, announcements.count, reviews.count];
+      document.querySelectorAll("#stats-grid .num").forEach(function (el, i) {
+        el.textContent = counts[i] != null ? counts[i] : "0";
+      });
+
+      var { data: recent } = await supabaseClient
+        .from("tournaments")
+        .select("title, eyebrow_label, medals_gold, medals_silver, medals_bronze")
+        .order("created_at", { ascending: false })
+        .limit(5);
+
+      var container = document.getElementById("recent-tournaments");
+      if (!recent || recent.length === 0) {
+        container.innerHTML = '<p class="admin-empty">No tournaments added yet. <a href="tournaments.html">Add your first one →</a></p>';
+      } else {
+        container.innerHTML = '<table class="admin-table"><thead><tr><th>Tournament</th><th>Label</th><th>Medals</th></tr></thead><tbody>' +
+          recent.map(function (t) {
+            var total = (t.medals_gold || 0) + (t.medals_silver || 0) + (t.medals_bronze || 0);
+            return "<tr><td>" + t.title + "</td><td>" + (t.eyebrow_label || "") + "</td><td>" + total + "</td></tr>";
+          }).join("") + "</tbody></table>";
+      }
+    })();
+  </script>
+</body>
+</html>

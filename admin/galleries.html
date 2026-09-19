@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Galleries | Sentou-Ken Admin</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+  <header class="admin-header">
+    <div class="brand">Sentou-Ken <span>Admin</span></div>
+    <nav class="admin-nav">
+      <a href="dashboard.html">Dashboard</a>
+      <a href="galleries.html" class="active">Galleries</a>
+      <a href="tournaments.html">Tournaments</a>
+      <a href="announcements.html">Announcements</a>
+      <a href="achievements.html">Achievements</a>
+      <a href="reviews.html">Reviews</a>
+      <a href="#" id="admin-logout">Log out</a>
+    </nav>
+  </header>
+
+  <main class="admin-container">
+    <h1 class="admin-title">Galleries</h1>
+    <p class="admin-subtitle">Create photo albums — they appear automatically in the public Gallery page</p>
+    <div id="page-message"></div>
+
+    <div class="admin-card">
+      <h2 id="form-heading" style="margin-top:0; font-size:1.1rem;">New Gallery</h2>
+      <form id="gallery-form">
+        <input type="hidden" id="gallery-id">
+        <div class="admin-field-row">
+          <div class="admin-field">
+            <label for="g-title">Gallery / Event Name</label>
+            <input type="text" id="g-title" required placeholder="e.g. 29th All India Shitoryu Karate-Do Championship 2026">
+          </div>
+          <div class="admin-field">
+            <label for="g-date">Date</label>
+            <input type="date" id="g-date">
+          </div>
+        </div>
+        <div class="admin-field">
+          <label for="g-location">Location</label>
+          <input type="text" id="g-location" placeholder="e.g. Mysuru">
+        </div>
+        <div class="admin-field">
+          <label for="g-desc">Description</label>
+          <textarea id="g-desc" placeholder="Short description shown with the gallery"></textarea>
+        </div>
+
+        <div class="admin-field">
+          <label>Photos</label>
+          <input type="file" id="g-photos" accept="image/jpeg,image/png,image/webp" multiple>
+          <div class="admin-photo-grid" id="photo-preview-grid"></div>
+        </div>
+
+        <div style="display:flex; gap:10px;">
+          <button type="submit" class="admin-btn" id="save-btn">Save Gallery</button>
+          <button type="button" class="admin-btn secondary" id="cancel-edit" style="display:none;">Cancel</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="admin-card">
+      <h2 style="margin-top:0; font-size:1.1rem;">Existing Galleries</h2>
+      <div id="galleries-list"><p class="admin-subtitle">Loading…</p></div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase-config.js"></script>
+  <script src="js/admin-auth.js"></script>
+  <script src="js/admin-upload.js"></script>
+  <script>
+    var pendingFiles = []; // files staged for upload, not yet saved
+    var existingPhotos = []; // photos already saved to this gallery (when editing)
+    var editingGalleryId = null;
+
+    function showMessage(text, type) {
+      document.getElementById("page-message").innerHTML =
+        '<div class="admin-message ' + type + '">' + text + '</div>';
+      window.scrollTo(0, 0);
+    }
+
+    function renderPhotoPreview() {
+      var grid = document.getElementById("photo-preview-grid");
+      grid.innerHTML = "";
+
+      existingPhotos.forEach(function (photo, idx) {
+        var thumb = document.createElement("div");
+        thumb.className = "admin-photo-thumb";
+        thumb.innerHTML = '<img src="' + photo.photo_url + '" alt="">' +
+          '<button type="button" class="remove-photo" data-existing="' + idx + '">&times;</button>';
+        grid.appendChild(thumb);
+      });
+
+      pendingFiles.forEach(function (file, idx) {
+        var thumb = document.createElement("div");
+        thumb.className = "admin-photo-thumb";
+        var img = document.createElement("img");
+        img.src = URL.createObjectURL(file);
+        thumb.appendChild(img);
+        var removeBtn = document.createElement("button");
+        removeBtn.type = "button";
+        removeBtn.className = "remove-photo";
+        removeBtn.innerHTML = "&times;";
+        removeBtn.setAttribute("data-pending", idx);
+        thumb.appendChild(removeBtn);
+        grid.appendChild(thumb);
+      });
+
+      grid.querySelectorAll("[data-pending]").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          pendingFiles.splice(parseInt(btn.getAttribute("data-pending"), 10), 1);
+          renderPhotoPreview();
+        });
+      });
+      grid.querySelectorAll("[data-existing]").forEach(function (btn) {
+        btn.addEventListener("click", async function () {
+          if (!confirm("Remove this photo from the gallery? This can't be undone.")) return;
+          var idx = parseInt(btn.getAttribute("data-existing"), 10);
+          var photo = existingPhotos[idx];
+          await supabaseClient.from("gallery_photos").delete().eq("id", photo.id);
+          existingPhotos.splice(idx, 1);
+          renderPhotoPreview();
+        });
+      });
+    }
+
+    document.getElementById("g-photos").addEventListener("change", function (e) {
+      pendingFiles = pendingFiles.concat(Array.from(e.target.files));
+      renderPhotoPreview();
+      e.target.value = "";
+    });
+
+    function resetForm() {
+      editingGalleryId = null;
+      pendingFiles = [];
+      existingPhotos = [];
+      document.getElementById("gallery-form").reset();
+      document.getElementById("form-heading").textContent = "New Gallery";
+      document.getElementById("cancel-edit").style.display = "none";
+      renderPhotoPreview();
+    }
+    document.getElementById("cancel-edit").addEventListener("click", resetForm);
+
+    async function loadGalleries() {
+      var { data: galleries, error } = await supabaseClient
+        .from("galleries")
+        .select("*, gallery_photos(id)")
+        .order("created_at", { ascending: false });
+
+      var list = document.getElementById("galleries-list");
+      if (error) { list.innerHTML = '<p class="admin-message error">' + error.message + '</p>'; return; }
+      if (!galleries || galleries.length === 0) {
+        list.innerHTML = '<p class="admin-empty">No galleries yet — create your first one above.</p>';
+        return;
+      }
+
+      list.innerHTML = '<table class="admin-table"><thead><tr><th>Title</th><th>Date</th><th>Photos</th><th></th></tr></thead><tbody>' +
+        galleries.map(function (g) {
+          return "<tr><td>" + g.title + "</td><td>" + (g.event_date || "—") + "</td><td>" + (g.gallery_photos ? g.gallery_photos.length : 0) + "</td>" +
+            '<td class="row-actions">' +
+            '<button class="admin-btn secondary" data-edit="' + g.id + '">Edit</button>' +
+            '<button class="admin-btn danger" data-delete="' + g.id + '">Delete</button>' +
+            "</td></tr>";
+        }).join("") + "</tbody></table>";
+
+      list.querySelectorAll("[data-edit]").forEach(function (btn) {
+        btn.addEventListener("click", function () { editGallery(btn.getAttribute("data-edit")); });
+      });
+      list.querySelectorAll("[data-delete]").forEach(function (btn) {
+        btn.addEventListener("click", function () { deleteGallery(btn.getAttribute("data-delete")); });
+      });
+    }
+
+    async function editGallery(id) {
+      var { data: gallery } = await supabaseClient.from("galleries").select("*").eq("id", id).single();
+      var { data: photos } = await supabaseClient.from("gallery_photos").select("*").eq("gallery_id", id);
+
+      editingGalleryId = id;
+      pendingFiles = [];
+      existingPhotos = photos || [];
+
+      document.getElementById("gallery-id").value = id;
+      document.getElementById("g-title").value = gallery.title || "";
+      document.getElementById("g-date").value = gallery.event_date || "";
+      document.getElementById("g-location").value = gallery.location || "";
+      document.getElementById("g-desc").value = gallery.description || "";
+      document.getElementById("form-heading").textContent = "Edit Gallery";
+      document.getElementById("cancel-edit").style.display = "inline-flex";
+      renderPhotoPreview();
+      window.scrollTo(0, 0);
+    }
+
+    async function deleteGallery(id) {
+      if (!confirm("Delete this entire gallery and all its photos? This can't be undone.")) return;
+      await supabaseClient.from("galleries").delete().eq("id", id);
+      showMessage("Gallery deleted.", "success");
+      loadGalleries();
+    }
+
+    document.getElementById("gallery-form").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      var saveBtn = document.getElementById("save-btn");
+      saveBtn.disabled = true;
+      saveBtn.textContent = "Saving…";
+
+      try {
+        var payload = {
+          title: document.getElementById("g-title").value.trim(),
+          event_date: document.getElementById("g-date").value || null,
+          location: document.getElementById("g-location").value.trim(),
+          description: document.getElementById("g-desc").value.trim()
+        };
+
+        var galleryId = editingGalleryId;
+        if (galleryId) {
+          await supabaseClient.from("galleries").update(payload).eq("id", galleryId);
+        } else {
+          var { data: created, error } = await supabaseClient.from("galleries").insert(payload).select().single();
+          if (error) throw error;
+          galleryId = created.id;
+        }
+
+        // Upload any newly-added photos
+        for (var i = 0; i < pendingFiles.length; i++) {
+          saveBtn.textContent = "Uploading photo " + (i + 1) + " of " + pendingFiles.length + "…";
+          var uploaded = await uploadPhotoToStorage(pendingFiles[i], "galleries/" + galleryId);
+          await supabaseClient.from("gallery_photos").insert({
+            gallery_id: galleryId,
+            photo_url: uploaded.url,
+            category: "tournaments"
+          });
+        }
+
+        showMessage("Gallery saved successfully.", "success");
+        resetForm();
+        loadGalleries();
+      } catch (err) {
+        showMessage("Something went wrong: " + err.message, "error");
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = "Save Gallery";
+      }
+    });
+
+    (async function () {
+      var session = await requireAdminLogin();
+      if (!session) return;
+      loadGalleries();
+      if (new URLSearchParams(location.search).has("new")) {
+        document.getElementById("g-title").focus();
+      }
+    })();
+  </script>
+</body>
+</html>

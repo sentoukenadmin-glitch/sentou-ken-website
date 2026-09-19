@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Announcements | Sentou-Ken Admin</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+  <header class="admin-header">
+    <div class="brand">Sentou-Ken <span>Admin</span></div>
+    <nav class="admin-nav">
+      <a href="dashboard.html">Dashboard</a>
+      <a href="galleries.html">Galleries</a>
+      <a href="tournaments.html">Tournaments</a>
+      <a href="announcements.html" class="active">Announcements</a>
+      <a href="achievements.html">Achievements</a>
+      <a href="reviews.html">Reviews</a>
+      <a href="#" id="admin-logout">Log out</a>
+    </nav>
+  </header>
+
+  <main class="admin-container">
+    <h1 class="admin-title">Announcements</h1>
+    <p class="admin-subtitle">The latest announcements appear automatically on the homepage</p>
+    <div id="page-message"></div>
+
+    <div class="admin-card">
+      <h2 id="form-heading" style="margin-top:0; font-size:1.1rem;">New Announcement</h2>
+      <form id="a-form">
+        <input type="hidden" id="a-id">
+        <div class="admin-field">
+          <label for="a-title">Title</label>
+          <input type="text" id="a-title" required placeholder="e.g. New batch starting in January">
+        </div>
+        <div class="admin-field-row">
+          <div class="admin-field">
+            <label for="a-date">Date</label>
+            <input type="date" id="a-date">
+          </div>
+          <div class="admin-field">
+            <label style="display:flex; align-items:center; gap:8px; margin-top: 26px;">
+              <input type="checkbox" id="a-important" style="width:auto;"> Mark as important
+            </label>
+          </div>
+        </div>
+        <div class="admin-field">
+          <label for="a-desc">Description</label>
+          <textarea id="a-desc"></textarea>
+        </div>
+        <div class="admin-field">
+          <label for="a-image">Image (optional)</label>
+          <input type="file" id="a-image" accept="image/jpeg,image/png,image/webp">
+          <div class="admin-photo-grid" id="a-preview"></div>
+        </div>
+
+        <div style="display:flex; gap:10px;">
+          <button type="submit" class="admin-btn" id="save-btn">Save Announcement</button>
+          <button type="button" class="admin-btn secondary" id="cancel-edit" style="display:none;">Cancel</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="admin-card">
+      <h2 style="margin-top:0; font-size:1.1rem;">Existing Announcements</h2>
+      <div id="a-list"><p class="admin-subtitle">Loading…</p></div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase-config.js"></script>
+  <script src="js/admin-auth.js"></script>
+  <script src="js/admin-upload.js"></script>
+  <script>
+    var editingId = null;
+    var pendingFile = null;
+    var existingImageUrl = null;
+
+    function showMessage(text, type) {
+      document.getElementById("page-message").innerHTML = '<div class="admin-message ' + type + '">' + text + '</div>';
+      window.scrollTo(0, 0);
+    }
+
+    function renderPreview() {
+      var grid = document.getElementById("a-preview");
+      grid.innerHTML = "";
+      var src = pendingFile ? URL.createObjectURL(pendingFile) : existingImageUrl;
+      if (!src) return;
+      grid.innerHTML = '<div class="admin-photo-thumb"><img src="' + src + '" alt=""></div>';
+    }
+    document.getElementById("a-image").addEventListener("change", function (e) {
+      pendingFile = e.target.files[0] || null;
+      renderPreview();
+    });
+
+    function resetForm() {
+      editingId = null;
+      pendingFile = null;
+      existingImageUrl = null;
+      document.getElementById("a-form").reset();
+      document.getElementById("form-heading").textContent = "New Announcement";
+      document.getElementById("cancel-edit").style.display = "none";
+      renderPreview();
+    }
+    document.getElementById("cancel-edit").addEventListener("click", resetForm);
+
+    async function loadAnnouncements() {
+      var { data, error } = await supabaseClient.from("announcements").select("*").order("announcement_date", { ascending: false });
+      var list = document.getElementById("a-list");
+      if (error) { list.innerHTML = '<p class="admin-message error">' + error.message + '</p>'; return; }
+      if (!data || data.length === 0) {
+        list.innerHTML = '<p class="admin-empty">No announcements yet.</p>';
+        return;
+      }
+      list.innerHTML = '<table class="admin-table"><thead><tr><th>Title</th><th>Date</th><th></th><th></th></tr></thead><tbody>' +
+        data.map(function (a) {
+          return "<tr><td>" + a.title + (a.is_important ? ' <span class="admin-badge featured">Important</span>' : "") + "</td><td>" + (a.announcement_date || "—") + "</td>" +
+            '<td class="row-actions"><button class="admin-btn secondary" data-edit="' + a.id + '">Edit</button></td>' +
+            '<td class="row-actions"><button class="admin-btn danger" data-delete="' + a.id + '">Delete</button></td></tr>';
+        }).join("") + "</tbody></table>";
+
+      list.querySelectorAll("[data-edit]").forEach(function (btn) {
+        btn.addEventListener("click", function () { editItem(btn.getAttribute("data-edit"), data); });
+      });
+      list.querySelectorAll("[data-delete]").forEach(function (btn) {
+        btn.addEventListener("click", function () { deleteItem(btn.getAttribute("data-delete")); });
+      });
+    }
+
+    function editItem(id, allData) {
+      var a = allData.filter(function (x) { return x.id === id; })[0];
+      editingId = id;
+      pendingFile = null;
+      existingImageUrl = a.image_url;
+      document.getElementById("a-title").value = a.title || "";
+      document.getElementById("a-date").value = a.announcement_date || "";
+      document.getElementById("a-important").checked = !!a.is_important;
+      document.getElementById("a-desc").value = a.description || "";
+      document.getElementById("form-heading").textContent = "Edit Announcement";
+      document.getElementById("cancel-edit").style.display = "inline-flex";
+      renderPreview();
+      window.scrollTo(0, 0);
+    }
+
+    async function deleteItem(id) {
+      if (!confirm("Delete this announcement?")) return;
+      await supabaseClient.from("announcements").delete().eq("id", id);
+      showMessage("Announcement deleted.", "success");
+      loadAnnouncements();
+    }
+
+    document.getElementById("a-form").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      var saveBtn = document.getElementById("save-btn");
+      saveBtn.disabled = true;
+      saveBtn.textContent = "Saving…";
+
+      try {
+        var imageUrl = existingImageUrl;
+        if (pendingFile) {
+          saveBtn.textContent = "Uploading image…";
+          var uploaded = await uploadPhotoToStorage(pendingFile, "announcements");
+          imageUrl = uploaded.url;
+        }
+
+        var payload = {
+          title: document.getElementById("a-title").value.trim(),
+          announcement_date: document.getElementById("a-date").value || null,
+          is_important: document.getElementById("a-important").checked,
+          description: document.getElementById("a-desc").value.trim(),
+          image_url: imageUrl
+        };
+
+        if (editingId) {
+          var { error } = await supabaseClient.from("announcements").update(payload).eq("id", editingId);
+          if (error) throw error;
+        } else {
+          var { error: insertError } = await supabaseClient.from("announcements").insert(payload);
+          if (insertError) throw insertError;
+        }
+
+        showMessage("Announcement saved successfully.", "success");
+        resetForm();
+        loadAnnouncements();
+      } catch (err) {
+        showMessage("Something went wrong: " + err.message, "error");
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = "Save Announcement";
+      }
+    });
+
+    (async function () {
+      var session = await requireAdminLogin();
+      if (!session) return;
+      loadAnnouncements();
+      if (new URLSearchParams(location.search).has("new")) document.getElementById("a-title").focus();
+    })();
+  </script>
+</body>
+</html>
