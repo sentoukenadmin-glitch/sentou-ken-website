@@ -94,8 +94,10 @@ const academy = {
     branches: 3                 // Confirmed
   },
 
-  // From the live Google Business Profile — verify this is still current before publishing,
-  // ratings/review counts change over time.
+  // From the live Google Business Profile. This is now editable from
+  // /admin/settings.html without touching code — the values below are only
+  // the fallback shown for a split second before the admin-set numbers load
+  // (or if the database is ever unreachable).
   googleReviews: {
     rating: 4.8,
     count: 31,
@@ -117,79 +119,28 @@ const academy = {
   ],
 
   // ==========================================================================
-  // TOURNAMENT RESULTS — this is the ONLY place you need to edit to add,
-  // remove, or correct a tournament. Every entry here automatically:
-  //   - becomes a click-to-expand card on tournaments.html
-  //   - feeds the "featured: true" one into the Achievements page summary
-  // To add a new tournament, copy one whole { ... } block below, paste it
-  // as a new item in the list, and change the values. No HTML editing needed.
-  // "medals" is optional — omit it entirely (or set to null) for events like
-  // seminars where medals don't apply.
+  // TOURNAMENT RESULTS — this list has been intentionally left empty because
+  // all tournaments (including the ones that used to be hardcoded here) now
+  // live in the Supabase database, managed from /admin/tournaments.html.
+  // js/public-content.js loads them from there and appends them to this
+  // array automatically at page load. Don't add entries here anymore — use
+  // the admin panel so they're editable/removable without touching code.
+  // (Fallback: if you ever need to work WITHOUT the admin panel, you can
+  // still add plain objects here — see HOW-TO-EDIT.md for the format.)
   // ==========================================================================
-  tournamentResults: [
-    {
-      id: "aiskc-2026",
-      eyebrowLabel: "National — 2026",
-      title: "29th All India Shitoryu Karate-Do Championship",
-      dateVenue: "24–26 July 2026 · Chamundi Vihaar Stadium, Mysuru",
-      studentsCompeted: 18,
-      medals: { gold: 7, silver: 7, bronze: 9 }, // totals 23 — shown automatically
-      notes: "",
-      featured: true // shown as the "Latest Result" on the Achievements page
-    },
-    {
-      id: "state-open-2020",
-      eyebrowLabel: "State Level — 2020",
-      title: "State Level Invitational Open Karate Championship",
-      dateVenue: "Organised by Okinawa Goju-Ryu Karate-Do Kyokai India",
-      studentsCompeted: null,
-      medals: { gold: 5, silver: 12, bronze: 4 }, // totals 21 — shown automatically
-      notes: "",
-      featured: false
-    },
-    {
-      id: "jiujitsu-seminar-2015",
-      eyebrowLabel: "International Seminar — 2015",
-      title: "International Jiu Jitsu Seminar & National WFJ Tournament",
-      dateVenue: "27–29 November 2015 · Vashi, Navi Mumbai",
-      studentsCompeted: null,
-      medals: null,
-      notes: "Academy representatives trained and competed alongside international instructors.",
-      featured: false
-    }
-    // To add another tournament, copy this whole block (from the { above the
-    // id line, to the } and comma above) and paste it here with new details.
-  ],
+  tournamentResults: [],
 
   // ==========================================================================
-  // GALLERY PHOTOS — this is the ONLY place you need to edit to add or remove
-  // a gallery photo. Every entry becomes a tile on gallery.html automatically,
-  // filterable by category.
-  //   1. Add the image file itself into the matching images/ subfolder.
-  //   2. Copy one whole { ... } line below, paste it as a new item, and point
-  //      "src" at your new file's path.
-  // Valid "category" values: "training", "tournaments", "belt-exams", "camps"
-  // Add "portrait: true" only for tall/narrow images (like a certificate
-  // collage) so they display uncropped instead of being zoomed into a square.
+  // GALLERY PHOTOS — this list has been intentionally left empty because all
+  // photos (including the original launch photos) now live in the Supabase
+  // database, managed from /admin/galleries.html. js/public-content.js loads
+  // them from there and adds them to this array automatically at page load.
+  // Don't add entries here anymore — use the admin panel so they're
+  // editable/removable without touching code.
+  // (Fallback: if you ever need to work WITHOUT the admin panel, you can
+  // still add plain objects here — see HOW-TO-EDIT.md for the format.)
   // ==========================================================================
-  galleryPhotos: [
-    { src: "images/training/sensei-technique.jpg", alt: "Sensei P. M. Gnanasekar demonstrating a technique", category: "training" },
-    { src: "images/training/kenjutsu-demo.jpg", alt: "Kenjutsu sword technique demonstration", category: "training" },
-    { src: "images/training/judo-throw.jpg", alt: "Students practicing a Judo throw", category: "training" },
-    { src: "images/training/kicks-row-girls.jpg", alt: "Students practicing side kicks in formation", category: "training" },
-    { src: "images/training/kicks-row-boys.jpg", alt: "Students practicing side kicks in formation", category: "training" },
-    { src: "images/training/training-demo-01.jpg", alt: "Student demonstrating a self-defence throw in front of the class", category: "training" },
-    { src: "images/tournaments/aiskc-2026-group-1.jpg", alt: "Students and officials at the 29th All India Shitoryu Karate-Do Championship 2026", category: "tournaments" },
-    { src: "images/tournaments/aiskc-2026-group-2.jpg", alt: "Medal-winning students at the 29th All India Shitoryu Karate-Do Championship 2026", category: "tournaments" },
-    { src: "images/tournaments/girls-trophies.jpg", alt: "Students with tournament trophies", category: "tournaments" },
-    { src: "images/tournaments/boys-trophies.jpg", alt: "Students with tournament trophies", category: "tournaments" },
-    { src: "images/tournaments/state-open-2020-group.jpg", alt: "Students at the State Level Invitational Open Karate Championship 2020", category: "tournaments" },
-    { src: "images/tournaments/okinawa-gojuryu-state-2020.jpg", alt: "Students at a state-level Karate championship", category: "tournaments" },
-    { src: "images/gallery/certificates-collage.jpg", alt: "Students receiving grading certificates", category: "belt-exams", portrait: true },
-    { src: "images/gallery/jiujitsu-seminar-2015.jpg", alt: "International Jiu Jitsu Seminar and National WFJ Tournament, 2015", category: "camps" }
-    // To add another photo: put the file in the right images/ subfolder, then
-    // copy one line above (from { to },) and edit the src/alt/category.
-  ],
+  galleryPhotos: [],
 
   // Class timings are intentionally not published on the site (academy's choice).
   programs: [
