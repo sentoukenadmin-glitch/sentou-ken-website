@@ -24,7 +24,7 @@ const academy = {
   landmark: "Near Jayam Supermarket",
   officeAddress: "7/14, Indian Bank Colony, Camp Road, Selayur, Chennai – 600073", // kept on file, not shown publicly — office/admin address only
   style: "Shito-Ryu Karate", // Confirmed
-  disciplinesOrder: ["Karate", "Judo", "Jujutsu", "Kenjutsu", "Kalaripayattu", "Varmam", "Silambam", "Adimurai"], // Confirmed display order — Karate first, then Judo, Jujutsu, Kenjutsu, then the rest
+  disciplinesOrder: ["Karate", "Judo", "Jujutsu", "Kenjutsu", "Kalaripayattu", "Varmam", "Silambam", "Simmakalari", "Adimurai"], // Confirmed display order — Karate first, then Judo, Jujutsu, Kenjutsu, then the rest
   phone1: "98405 40985",
   phone2: "9677246635",
   whatsapp: "919677246635", // Confirmed primary WhatsApp line
@@ -50,11 +50,11 @@ const academy = {
     // Jujutsu/Kenjutsu under that organization — consistent with the ranks above,
     // but worth Sensei confirming the exact wording/title before it goes on the
     // site, since it wasn't in the academy's own biography document.
-    otherExpertise: ["Adimurai", "Kalaripayattu (Kalari)", "Varmam", "Silambam"],
+    otherExpertise: ["Adimurai", "Kalaripayattu (Kalari)", "Varmam", "Silambam", "Simmakalari"],
     startedTrainingAge: 15,
     birthYear: 1975, // Confirmed by the academy — used to auto-calculate years of experience below
     trainingStartYear: 1975 + 15, // = 1990. Do not hardcode this elsewhere; it's derived here once.
-    studentsTrainedCareerTotal: "10,000+", // across his full career, not exclusively at Sentou-Ken
+    studentsTrainedCareerTotal: "25,000+", // across his full career, not exclusively at Sentou-Ken
     competitiveRecord: { gold: 25, silver: 6, bronze: 7 },
     honours: [
       "Honoured twice with the title \"Best Fighter\"",
@@ -67,7 +67,7 @@ const academy = {
     ],
     teacher: "Sensei B. M. Narasimhan", // see lineage.teacher below for full profile
     quote: "The essence of martial arts is the journey of continuous self-improvement — physically, mentally, emotionally, and spiritually.",
-    bio: "Sensei P. M. Gnanasekar began his martial arts journey at the age of 15. Over more than 30 years of dedicated practice and teaching, he has trained more than 10,000 students, competed to win 25 Gold, 6 Silver and 7 Bronze medals, and been honoured twice as \"Best Fighter.\" Beyond Karate, he has built expertise across Jujutsu, Kenjutsu, Judo, Adimurai, Kalaripayattu, Varmam and Silambam. In 2001, driven by a vision to share the values of martial arts, he founded Sentou-Ken Martial Arts Academy."
+    bio: "Sensei P. M. Gnanasekar began his martial arts journey at the age of 15. Over more than 30 years of dedicated practice and teaching, he has trained more than 25,000 students, competed to win 25 Gold, 6 Silver and 7 Bronze medals, and been honoured twice as \"Best Fighter.\" Beyond Karate, he has built expertise across Jujutsu, Kenjutsu, Judo, Adimurai, Kalaripayattu, Varmam, Silambam and Simmakalari. In 2001, driven by a vision to share the values of martial arts, he founded Sentou-Ken Martial Arts Academy."
   },
 
   // The teacher who shaped Sensei P.M. Gnanasekar's own training — shown in the
@@ -89,7 +89,7 @@ const academy = {
 
   stats: {
     yearsSinceFounding: 25,     // 2026 − 2001
-    studentsTrained: "10,000+", // by the Founder, across his full career
+    studentsTrained: "25,000+", // by the Founder, across his full career
     medalsWon: 23,              // academy students, Mysuru 2026
     branches: 3                 // Confirmed
   },
