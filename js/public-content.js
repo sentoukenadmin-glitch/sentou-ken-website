@@ -78,11 +78,15 @@
 
   // Runs a Supabase query, using the local cache as a fallback on any real
   // error (including a timeout) but never on a genuine empty result.
-  async function fetchWithFallback(cacheKey, queryPromise, timeoutMs) {
+  // hardDefault (optional) is used only when there's ALSO no local cache yet
+  // (e.g. a visitor's very first-ever load, hitting a rare outage) — for
+  // sections where the page must never look empty even to a brand-new
+  // visitor, this is a small hardcoded copy of the current content.
+  async function fetchWithFallback(cacheKey, queryPromise, timeoutMs, hardDefault) {
     var result = await withTimeout(queryPromise, timeoutMs || 8000);
     if (result.error) {
       var cached = cacheGet(cacheKey);
-      return { data: cached, fromCache: true };
+      return { data: cached || hardDefault || null, fromCache: true };
     }
     cacheSet(cacheKey, result.data || []);
     return { data: result.data, fromCache: false };
@@ -221,6 +225,42 @@
     if (section) section.hidden = false;
   }
 
+  // ---------- Team (added/edited in /admin/team.html, shown on the About page) ----------
+  // Small hardcoded copy of the current team, used ONLY if a brand-new
+  // visitor (no local cache yet) hits the page during a rare outage — so
+  // the About page's Team section never looks empty, even then.
+  var TEAM_HARD_FALLBACK = [
+    { name: "SENSEI P.M.G.", role: "Founder, Chief Instructor & Technical Director", photo_url: "images/students/sensei-pmg.jpg" },
+    { name: "Grandmaster B. M. Narasimhan", role: "Founder, Self Defence School of Indian Karate", photo_url: "images/students/grandmaster-narasimhan.jpg" },
+    { name: "Sempai Madhavan", role: "Admin", photo_url: null },
+    { name: "Sempai Shashank", role: "Instructor", photo_url: null },
+    { name: "Sempai Sakshin", role: "Instructor", photo_url: null }
+  ];
+
+  async function loadTeamFromCMS() {
+    var container = document.querySelector("#cms-team-grid");
+    if (!container) return; // about.html only
+
+    var { data } = await fetchWithFallback(
+      "cms_team_members",
+      supabaseClient.from("team_members").select("*").order("sort_order", { ascending: true }),
+      8000,
+      TEAM_HARD_FALLBACK
+    );
+    if (!data || !data.length) { container.innerHTML = ""; return; }
+
+    container.innerHTML = data.map(function (m) {
+      var photoHtml = m.photo_url
+        ? '<img loading="lazy" src="' + esc(m.photo_url) + '" alt="' + esc(m.name) + '" style="width:110px; height:110px; object-fit:cover; border:1px solid var(--line); flex-shrink:0;">'
+        : '<div style="width:110px; height:110px; background:var(--charcoal); border:1px solid var(--line); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:0.7rem; color:var(--bone-dim); text-align:center;">Photo<br>to be added</div>';
+      return '<div class="card reveal" style="display:flex; gap:var(--space-3); align-items:flex-start;">' +
+        photoHtml +
+        '<div><h3 style="margin-bottom:2px;">' + esc(m.name) + '</h3>' +
+        (m.role ? '<p class="eyebrow" style="margin-bottom:0;">' + esc(m.role) + '</p>' : '') +
+        '</div></div>';
+    }).join("");
+  }
+
   // ---------- Site Settings (edited in /admin/settings.html) ----------
   async function loadSiteSettingsFromCMS() {
     var el = document.querySelector("#google-rating-text");
@@ -246,5 +286,6 @@
     loadAchievementsFromCMS();
     loadReviewsFromCMS();
     loadSiteSettingsFromCMS();
+    loadTeamFromCMS();
   });
 })();
