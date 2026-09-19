@@ -104,6 +104,16 @@
       .replace(/"/g, "&quot;");
   }
 
+  // Content injected here after DOMContentLoaded arrives too late for
+  // main.js's scroll-reveal setup (it only observes ".reveal" elements that
+  // already existed at page load) — without this, cards added by CMS
+  // loaders below would stay invisible (opacity: 0) forever. Making them
+  // visible immediately is simpler and safer than re-wiring the observer.
+  function revealNow(container) {
+    if (!container) return;
+    container.querySelectorAll(".reveal").forEach(function (el) { el.classList.add("is-visible"); });
+  }
+
   function starString(rating) {
     var n = Math.max(0, Math.min(5, parseInt(rating, 10) || 0));
     return "★★★★★".slice(0, n) + "☆☆☆☆☆".slice(0, 5 - n);
@@ -171,6 +181,7 @@
         (a.description ? '<p style="margin:0;">' + esc(a.description) + '</p>' : '') +
         '</div>';
     }).join("");
+    revealNow(container);
     container.closest("section").hidden = false;
   }
 
@@ -196,6 +207,7 @@
       html += '</div>';
       return html;
     }).join("");
+    revealNow(container);
 
     var section = container.closest("section");
     if (section) section.hidden = false;
@@ -220,6 +232,7 @@
         '<p style="margin:0; font-size:0.85rem; color:var(--bone-dim);">via ' + esc(r.source || "Google") + '</p>' +
         '</div>';
     }).join("");
+    revealNow(container);
 
     var section = container.closest("section");
     if (section) section.hidden = false;
@@ -259,6 +272,7 @@
         (m.role ? '<p class="eyebrow" style="margin-bottom:0;">' + esc(m.role) + '</p>' : '') +
         '</div></div>';
     }).join("");
+    revealNow(container);
   }
 
   // ---------- Site Settings (edited in /admin/settings.html) ----------
