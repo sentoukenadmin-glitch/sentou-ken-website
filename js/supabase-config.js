@@ -17,12 +17,12 @@
  * bypasses all security rules and must stay private, used only if you ever
  * build a separate server-side tool.
  */
-const SUPABASE_URL = "YOUR_SUPABASE_PROJECT_URL_HERE"; // e.g. https://xxxxx.supabase.co
-const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_PUBLIC_KEY_HERE";
+const SUPABASE_URL = "https://wookdrzqutibhrukehoe.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_GMW4wHOvPk1OHkp00dIZLw_iev9ppCV";
 
 const SUPABASE_CONFIGURED = !SUPABASE_URL.includes("YOUR_SUPABASE") && !SUPABASE_ANON_KEY.includes("YOUR_SUPABASE");
 
 let supabaseClient = null;
 if (SUPABASE_CONFIGURED && typeof supabase !== "undefined") {
-  supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 }
