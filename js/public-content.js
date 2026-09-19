@@ -245,9 +245,9 @@
   var TEAM_HARD_FALLBACK = [
     { name: "SENSEI P.M.G.", role: "Founder, Chief Instructor & Technical Director", photo_url: "images/students/sensei-pmg.jpg" },
     { name: "Grandmaster B. M. Narasimhan", role: "Founder, Self Defence School of Indian Karate", photo_url: "images/students/grandmaster-narasimhan.jpg" },
-    { name: "Sempai Madhavan", role: "Admin", photo_url: null },
-    { name: "Sempai Shashank", role: "Instructor", photo_url: null },
-    { name: "Sempai Sakshin", role: "Instructor", photo_url: null }
+    { name: "Sempai Madhavan", role: "Admin", photo_url: "https://wookdrzqutibhrukehoe.supabase.co/storage/v1/object/public/academy-photos/team/1789838055834-madhavan.png" },
+    { name: "Sempai Shashank", role: "Instructor", photo_url: "https://wookdrzqutibhrukehoe.supabase.co/storage/v1/object/public/academy-photos/team/1789838103102-shashank.png" },
+    { name: "Sempai Sakshin", role: "Instructor", photo_url: "https://wookdrzqutibhrukehoe.supabase.co/storage/v1/object/public/academy-photos/team/1789838133880-sakshin.png" }
   ];
 
   async function loadTeamFromCMS() {
