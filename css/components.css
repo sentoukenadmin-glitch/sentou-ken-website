@@ -1,0 +1,437 @@
+/* ==========================================================================
+   components.css — nav, buttons, cards, badges, footer
+   ========================================================================== */
+
+/* ---------- Top bar ---------- */
+.topbar {
+  background: var(--crimson);
+  color: var(--bone);
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.topbar .container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.topbar a { opacity: 0.92; }
+.topbar a:hover { opacity: 1; text-decoration: underline; }
+
+/* ---------- Navigation ---------- */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(20, 17, 15, 0.94);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid var(--line);
+}
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.brand img { width: 46px; height: 46px; }
+.brand-text {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 0.95rem;
+  color: var(--white);
+  line-height: 1.15;
+}
+.brand-text span {
+  display: block;
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  color: var(--crimson);
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.nav-links {
+  display: flex;
+  gap: var(--space-4);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.nav-links a {
+  position: relative;
+  padding: 4px 0;
+  color: var(--bone-dim);
+  transition: color 0.15s ease;
+}
+.nav-links a:hover, .nav-links a[aria-current="page"] { color: var(--white); }
+.nav-links a[aria-current="page"]::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: -4px;
+  height: 2px;
+  background: var(--crimson);
+}
+
+.nav-cta { display: none; }
+
+.nav-toggle {
+  display: none;
+  background: none;
+  border: 1px solid var(--line);
+  color: var(--white);
+  padding: 8px 10px;
+  font-family: var(--font-display);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 14px 28px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.btn-primary {
+  background: var(--crimson);
+  color: var(--white);
+}
+.btn-primary:hover { background: var(--crimson-dim); transform: translateY(-1px); }
+
+.btn-outline {
+  background: transparent;
+  border-color: var(--bone-dim);
+  color: var(--bone);
+}
+.btn-outline:hover { border-color: var(--white); color: var(--white); }
+
+.section-alt .btn-outline {
+  border-color: var(--charcoal);
+  color: var(--ink);
+}
+.section-alt .btn-outline:hover { border-color: var(--ink); }
+
+.btn-row { display: flex; gap: 14px; flex-wrap: wrap; }
+
+/* ---------- Cards ---------- */
+.card {
+  background: var(--ink-raised);
+  border: 1px solid var(--line);
+  padding: var(--space-4);
+}
+.section-alt .card {
+  background: var(--white);
+  border: 1px solid rgba(20,17,15,0.08);
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3);
+}
+
+.program-card .num {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+  color: var(--crimson);
+  display: block;
+  margin-bottom: var(--space-2);
+}
+
+/* ---------- Stat blocks ---------- */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-3);
+  text-align: center;
+}
+.stat {
+  padding: var(--space-3) var(--space-2);
+  border-top: 2px solid var(--crimson);
+}
+.stat .value {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  color: var(--white);
+  font-weight: 700;
+  display: block;
+}
+/* On light (.section-alt) backgrounds, white stat numbers are nearly invisible —
+   swap to dark ink text there so they're actually readable. */
+.section-alt .stat .value { color: var(--ink); }
+.section-alt .stat .label { color: var(--charcoal); }
+.stat .label {
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--bone-dim);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.stat .label .badge-todo { margin-left: 0; }
+
+/* ---------- Badge (verification / status tag used while content is draft) ---------- */
+.badge-todo {
+  display: inline-block;
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: rgba(176, 139, 63, 0.16);
+  color: var(--bronze);
+  border: 1px solid rgba(176, 139, 63, 0.4);
+  padding: 3px 8px;
+  border-radius: var(--radius);
+  margin-left: 8px;
+}
+
+/* ---------- Gallery grid ---------- */
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+.gallery-grid figure {
+  margin: 0;
+  aspect-ratio: 4/3;
+  background: var(--ink-raised);
+  border: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--bone-dim);
+  font-size: 0.75rem;
+  text-align: center;
+  padding: var(--space-2);
+}
+
+/* ---------- Video embed wrapper ---------- */
+.video-wrap {
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%;
+  background: var(--ink-raised);
+  border: 1px solid var(--line);
+}
+.video-wrap iframe {
+  position: absolute; inset: 0; width: 100%; height: 100%; border: 0;
+}
+
+/* ---------- Form ---------- */
+.form-field { margin-bottom: var(--space-3); }
+.form-field label {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--bone-dim);
+  margin-bottom: 6px;
+}
+.section-alt .form-field label { color: var(--charcoal); }
+.form-field input, .form-field textarea, .form-field select {
+  width: 100%;
+  background: var(--ink-raised);
+  border: 1px solid var(--line);
+  color: var(--bone);
+  padding: 12px 14px;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+}
+.section-alt .form-field input,
+.section-alt .form-field textarea,
+.section-alt .form-field select {
+  background: var(--white);
+  border: 1px solid rgba(20,17,15,0.18);
+  color: var(--ink);
+}
+.form-field textarea { resize: vertical; min-height: 120px; }
+.form-status { margin-top: var(--space-2); font-size: 0.9rem; }
+.form-status[data-state="success"] { color: #4CAF7D; }
+.form-status[data-state="error"] { color: #E0666F; }
+
+/* ---------- Enquiry form success state ---------- */
+.form-success { text-align: center; padding: var(--space-3) 0; }
+.form-success .success-icon {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: var(--crimson);
+  color: var(--white);
+  font-size: 1.6rem;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto var(--space-3);
+}
+.form-success h3 { margin-bottom: var(--space-1); }
+.form-success p { margin: 0 auto; max-width: 40ch; }
+
+/* ---------- Footer ---------- */
+.site-footer {
+  background: #0B0908;
+  border-top: 1px solid var(--line);
+  padding: var(--space-5) 0 var(--space-3);
+}
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+.footer-grid h4 {
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+  color: var(--bone);
+  margin-bottom: var(--space-2);
+}
+.footer-links { list-style: none; padding: 0; margin: 0; }
+.footer-links li { margin-bottom: 8px; }
+.footer-links a { color: var(--bone-dim); font-size: 0.92rem; }
+.footer-links a:hover { color: var(--white); }
+.footer-bottom {
+  border-top: 1px solid var(--line);
+  padding-top: var(--space-3);
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: var(--bone-dim);
+}
+
+/* ---------- Scroll-reveal (progressive enhancement; content is fully visible
+   without JS — see main.js, which only adds the "is-visible" class) ---------- */
+.reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.reveal.is-visible { opacity: 1; transform: translateY(0); }
+.reveal-stagger.is-visible > * { transition-delay: calc(var(--i, 0) * 90ms); }
+
+/* ---------- Sticky header gains depth once the page scrolls ---------- */
+.site-header { transition: box-shadow 0.25s ease, background 0.25s ease; }
+.site-header.is-scrolled { box-shadow: 0 8px 24px rgba(0,0,0,0.35); }
+
+/* ---------- Card hover: lift + crimson edge ---------- */
+.card { transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease; }
+.card:hover {
+  transform: translateY(-4px);
+  border-color: var(--crimson);
+  box-shadow: 0 14px 30px rgba(0,0,0,0.28);
+}
+.section-alt .card:hover { box-shadow: 0 14px 30px rgba(20,17,15,0.12); }
+
+/* ---------- Gallery image zoom on hover ---------- */
+.gallery-grid figure { overflow: hidden; position: relative; }
+.gallery-grid img { transition: transform 0.5s ease; width:100%; height:100%; object-fit: cover; display:block; }
+.gallery-grid figure:hover img { transform: scale(1.06); }
+.gallery-grid figure.portrait img { object-fit: contain; background: var(--ink); }
+
+/* ---------- Count-up stat numbers ---------- */
+.stat .value { font-variant-numeric: tabular-nums; }
+
+/* ---------- Tournament accordion cards ---------- */
+.tournament-card { padding: 0; overflow: hidden; }
+.tournament-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  background: none;
+  border: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  padding: var(--space-4);
+  font-family: inherit;
+}
+.tournament-toggle .toggle-icon {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  color: var(--crimson);
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+.tournament-toggle[aria-expanded="true"] .toggle-icon { transform: rotate(45deg); }
+.tournament-details {
+  padding: 0 var(--space-4) var(--space-4);
+}
+.tournament-details p { margin-bottom: var(--space-1); }
+
+/* ---------- Founder/portrait + text layout (used on About + Home) -------- */
+.founder-grid {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: var(--space-4);
+  align-items: start;
+}
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: var(--space-5);
+  align-items: start;
+}
+@media (max-width: 760px) {
+  .founder-grid { grid-template-columns: 1fr; }
+  .founder-grid img { max-width: 240px; margin: 0 auto; }
+  .contact-grid { grid-template-columns: 1fr; }
+}
+
+.whatsapp-fab {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 200;
+  background: #25D366;
+  color: #0B0908;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+  font-family: var(--font-display);
+}
+.whatsapp-fab:hover { transform: translateY(-2px); }
+
+/* ---------- Social icon glyphs (simple outline style, inherit button color) --- */
+.social-icon {
+  width: 18px;
+  height: 18px;
+  vertical-align: -4px;
+  margin-right: 8px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+}
+.social-icon .filled { fill: currentColor; stroke: none; }

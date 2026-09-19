@@ -1,0 +1,136 @@
+/* ==========================================================================
+   cursor.css — custom eagle cursor + eagle page-transition effect
+   Only activates on devices with a real mouse (pointer: fine) and when the
+   person hasn't asked for reduced motion. Touch devices and reduced-motion
+   users get the normal system cursor and instant navigation — this is a
+   pure visual flourish, never a functional dependency.
+   ========================================================================== */
+
+body.eagle-cursor-active,
+body.eagle-cursor-active a,
+body.eagle-cursor-active button,
+body.eagle-cursor-active .btn,
+body.eagle-cursor-active .filter-btn,
+body.eagle-cursor-active .tournament-toggle,
+body.eagle-cursor-active .nav-toggle {
+  cursor: none;
+}
+/* Text fields keep the normal text cursor — hiding it there would hurt usability */
+body.eagle-cursor-active input,
+body.eagle-cursor-active textarea,
+body.eagle-cursor-active select {
+  cursor: auto;
+}
+
+.eagle-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 34px;
+  height: 34px;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity 0.25s ease, width 0.2s ease, height 0.2s ease;
+  will-change: transform;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.35));
+}
+.eagle-cursor.is-visible { opacity: 1; }
+.eagle-cursor.is-hovering { width: 46px; height: 46px; }
+.eagle-cursor svg { width: 100%; height: 100%; display: block; }
+.eagle-cursor path { fill: var(--crimson); }
+
+/* ---------- Page transition: the real academy eagle appears at a proper,
+   fully-visible size (fitted to the viewport so head/tail never get cropped),
+   with a shine sweep across it, while water-ripple rings expand outward like
+   a stone dropped in a well — all starting at the exact same instant as the
+   screen darkens, so there's never a blank gap. ---------- */
+.page-transition-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--ink);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 9999;
+  transition: opacity 0.4s ease;
+}
+.page-transition-overlay.is-active { opacity: 1; }
+
+.ripple-ring {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--bone);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 9999;
+}
+.ripple-ring.is-rippling {
+  animation: ripple-out 0.75s cubic-bezier(.2,.7,.3,1) forwards;
+}
+@keyframes ripple-out {
+  0%   { transform: translate(-50%, -50%) scale(0);  opacity: 0.85; }
+  60%  { opacity: 0.35; }
+  100% { transform: translate(-50%, -50%) scale(var(--ring-scale, 40)); opacity: 0; }
+}
+
+.eagle-flyer {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 90px;
+  height: 90px;
+  pointer-events: none;
+  z-index: 10000;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.35);
+  transition: transform 0.5s cubic-bezier(.16,.85,.28,1), opacity 0.22s ease;
+}
+.eagle-flyer .eagle-img,
+.eagle-flyer .eagle-shine {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+.eagle-flyer.is-flying {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(var(--fly-scale, 5));
+}
+
+/* Shine/glitter sweep, masked to the eagle's own silhouette so the shine
+   only ever appears across the bird itself, not a visible square. */
+.eagle-flyer .eagle-shine {
+  background: linear-gradient(115deg, transparent 35%, rgba(255,255,255,0.95) 50%, transparent 65%);
+  background-size: 300% 300%;
+  background-position: -120% -120%;
+  -webkit-mask-image: url(../images/logo/eagle-only.png);
+  mask-image: url(../images/logo/eagle-only.png);
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  mix-blend-mode: screen;
+  opacity: 0;
+}
+.eagle-flyer.is-flying .eagle-shine {
+  opacity: 1;
+  animation: shine-sweep 0.65s ease-in-out 0.05s;
+}
+@keyframes shine-sweep {
+  0%   { background-position: -120% -120%; }
+  100% { background-position: 120% 120%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .eagle-cursor, .page-transition-overlay, .eagle-flyer, .ripple-ring { display: none !important; }
+}

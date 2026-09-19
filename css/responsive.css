@@ -1,0 +1,51 @@
+/* ==========================================================================
+   responsive.css — breakpoint overrides
+   Base styles in style.css/components.css are already fluid (clamp, %, grid);
+   this file handles structural changes at smaller widths.
+   ========================================================================== */
+
+@media (max-width: 960px) {
+  .card-grid { grid-template-columns: repeat(2, 1fr); }
+  .stat-grid { grid-template-columns: repeat(2, 1fr); gap: var(--space-2); }
+  .footer-grid { grid-template-columns: 1fr 1fr; }
+  .gallery-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 760px) {
+  .nav-links {
+    position: fixed;
+    top: 73px; left: 0; right: 0;
+    flex-direction: column;
+    background: var(--ink);
+    border-bottom: 1px solid var(--line);
+    padding: var(--space-3);
+    gap: var(--space-3);
+    transform: translateY(-8px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+  }
+  .nav-links.is-open {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .nav-toggle { display: block; }
+
+  section { padding: var(--space-5) 0; }
+
+  .card-grid { grid-template-columns: 1fr; }
+  .stat-grid { grid-template-columns: 1fr 1fr; }
+  .footer-grid { grid-template-columns: 1fr; gap: var(--space-3); }
+  .gallery-grid { grid-template-columns: repeat(2, 1fr); }
+
+  .topbar .container { justify-content: center; text-align: center; }
+
+  .whatsapp-fab { right: 14px; bottom: 14px; width: 50px; height: 50px; }
+}
+
+@media (max-width: 480px) {
+  .gallery-grid { grid-template-columns: 1fr 1fr; }
+  .btn { width: 100%; justify-content: center; }
+  .btn-row { flex-direction: column; }
+}
