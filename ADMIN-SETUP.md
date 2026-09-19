@@ -14,11 +14,20 @@ all together. No coding required for any of this.
 | Free tier | 500MB database, 1GB file storage, 50,000 monthly active users — enormous headroom for a single academy site |
 | Security | Row Level Security (built into Postgres) — public visitors can only ever read, only a logged-in admin can write |
 
-**Free tier limitation to know:** Supabase pauses free projects after 7 days
-of total inactivity (no visits at all). The very next visit wakes it up
-automatically within a few seconds — visitors won't notice, but if you're
-testing after a long break, the first load might take a couple of seconds
-longer than usual. If your site gets regular traffic this will never happen.
+**Free tier limitation to know (already handled for you):** Supabase pauses
+free projects after 7 days of *total* inactivity (no visits at all). Two
+things make sure your visitors never actually see an empty site because of
+this:
+1. A scheduled task (`.github/workflows/keep-supabase-awake.yml`) quietly
+   pings your database every 3 days, so it never sits idle long enough to
+   pause in the first place — you don't need to do anything for this to work.
+2. As a backup, `js/public-content.js` remembers the last successfully
+   loaded content in each visitor's browser, so even a rare failed request
+   shows the last-known version instead of a blank section.
+The only case this can't cover is a brand-new visitor's very first-ever load
+of the site landing at the exact moment of a real outage — vanishingly
+unlikely, and even then the site heals itself as soon as the connection
+returns.
 
 ## Step 1 — Create your Supabase project
 
