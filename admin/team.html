@@ -68,6 +68,7 @@
   <script src="../js/supabase-config.js"></script>
   <script src="js/admin-auth.js"></script>
   <script src="js/admin-upload.js"></script>
+  <script src="js/admin-reorder.js"></script>
   <script>
     var editingId = null;
     var pendingFile = null;
@@ -110,8 +111,8 @@
         return;
       }
       list.innerHTML = '<table class="admin-table"><thead><tr><th>Order</th><th>Name</th><th>Role</th><th></th><th></th></tr></thead><tbody>' +
-        data.map(function (m) {
-          return "<tr><td>" + (m.sort_order != null ? m.sort_order : "—") + "</td><td>" + m.name + "</td><td>" + (m.role || "—") + "</td>" +
+        data.map(function (m, idx) {
+          return "<tr><td class=\"row-actions\">" + reorderButtonsHtml(idx, data.length) + "</td><td>" + m.name + "</td><td>" + (m.role || "—") + "</td>" +
             '<td class="row-actions"><button class="admin-btn secondary" data-edit="' + m.id + '">Edit</button></td>' +
             '<td class="row-actions"><button class="admin-btn danger" data-delete="' + m.id + '">Delete</button></td></tr>';
         }).join("") + "</tbody></table>";
@@ -122,6 +123,7 @@
       list.querySelectorAll("[data-delete]").forEach(function (btn) {
         btn.addEventListener("click", function () { deleteItem(btn.getAttribute("data-delete")); });
       });
+      wireReorderButtons(list, "team_members", data, loadTeam);
     }
 
     function editItem(id, allData) {

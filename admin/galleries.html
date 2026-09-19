@@ -85,12 +85,19 @@
       <h2 style="margin-top:0; font-size:1.1rem;">Existing Galleries</h2>
       <div id="galleries-list"><p class="admin-subtitle">Loading…</p></div>
     </div>
+
+    <div class="admin-card">
+      <h2 style="margin-top:0; font-size:1.1rem;">Photo Order</h2>
+      <p class="admin-subtitle">This is the order photos appear in on the public Gallery page (across all galleries combined). Use the arrows to rearrange — changes go live within a few seconds.</p>
+      <div id="photo-order-list"><p class="admin-subtitle">Loading…</p></div>
+    </div>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../js/supabase-config.js"></script>
   <script src="js/admin-auth.js"></script>
   <script src="js/admin-upload.js"></script>
+  <script src="js/admin-reorder.js"></script>
   <script>
     var pendingFiles = []; // files staged for upload, not yet saved
     var existingPhotos = []; // photos already saved to this gallery (when editing)
@@ -143,6 +150,7 @@
           await supabaseClient.from("gallery_photos").delete().eq("id", photo.id);
           existingPhotos.splice(idx, 1);
           renderPhotoPreview();
+          loadPhotoOrder();
         });
       });
     }
@@ -218,6 +226,36 @@
       await supabaseClient.from("galleries").delete().eq("id", id);
       showMessage("Gallery deleted.", "success");
       loadGalleries();
+      loadPhotoOrder();
+    }
+
+    // ---------- Photo Order (all photos across every gallery, in the order they show publicly) ----------
+    var allPhotosSorted = [];
+
+    async function loadPhotoOrder() {
+      var { data, error } = await supabaseClient
+        .from("gallery_photos")
+        .select("id, photo_url, caption, category, sort_order")
+        .order("sort_order", { ascending: true })
+        .order("created_at", { ascending: true });
+
+      var container = document.getElementById("photo-order-list");
+      if (error) { container.innerHTML = '<p class="admin-message error">' + error.message + '</p>'; return; }
+      allPhotosSorted = data || [];
+      if (!allPhotosSorted.length) {
+        container.innerHTML = '<p class="admin-empty">No photos yet — add some to a gallery above.</p>';
+        return;
+      }
+
+      container.innerHTML = '<table class="admin-table"><thead><tr><th></th><th>Photo</th><th>Category</th><th>Order</th></tr></thead><tbody>' +
+        allPhotosSorted.map(function (p, idx) {
+          return "<tr><td><img src=\"" + p.photo_url + "\" alt=\"\" style=\"width:70px; height:50px; object-fit:cover; border:1px solid var(--admin-border); border-radius:4px; display:block;\"></td>" +
+            "<td>" + (p.caption || "—") + "</td>" +
+            "<td>" + (p.category || "—") + "</td>" +
+            "<td class=\"row-actions\">" + reorderButtonsHtml(idx, allPhotosSorted.length) + "</td></tr>";
+        }).join("") + "</tbody></table>";
+
+      wireReorderButtons(container, "gallery_photos", allPhotosSorted, loadPhotoOrder);
     }
 
     document.getElementById("gallery-form").addEventListener("submit", async function (e) {
@@ -243,7 +281,11 @@
           galleryId = created.id;
         }
 
-        // Upload any newly-added photos
+        // Upload any newly-added photos — each one is appended to the END of
+        // the current display order (not left at the default 0), so it
+        // shows up last on the public Gallery page instead of jumping to
+        // the front. Use "Photo Order" below to move it wherever you like.
+        var nextOrder = nextSortOrder(allPhotosSorted);
         for (var i = 0; i < pendingFiles.length; i++) {
           saveBtn.textContent = "Uploading photo " + (i + 1) + " of " + pendingFiles.length + "…";
           var uploaded = await uploadPhotoToStorage(pendingFiles[i], "galleries/" + galleryId);
@@ -251,13 +293,15 @@
             gallery_id: galleryId,
             photo_url: uploaded.url,
             category: document.getElementById("g-photo-category").value,
-            is_portrait: document.getElementById("g-photo-portrait").checked
+            is_portrait: document.getElementById("g-photo-portrait").checked,
+            sort_order: nextOrder++
           });
         }
 
         showMessage("Gallery saved successfully.", "success");
         resetForm();
         loadGalleries();
+        loadPhotoOrder();
       } catch (err) {
         showMessage("Something went wrong: " + err.message, "error");
       } finally {
@@ -270,6 +314,7 @@
       var session = await requireAdminLogin();
       if (!session) return;
       loadGalleries();
+      loadPhotoOrder();
       if (new URLSearchParams(location.search).has("new")) {
         document.getElementById("g-title").focus();
       }

@@ -78,10 +78,12 @@
   <script src="../js/supabase-config.js"></script>
   <script src="js/admin-auth.js"></script>
   <script src="js/admin-upload.js"></script>
+  <script src="js/admin-reorder.js"></script>
   <script>
     var editingId = null;
     var pendingFile = null;
     var existingImageUrl = null;
+    var currentAchievements = [];
 
     function showMessage(text, type) {
       document.getElementById("page-message").innerHTML = '<div class="admin-message ' + type + '">' + text + '</div>';
@@ -111,17 +113,38 @@
     }
     document.getElementById("cancel-edit").addEventListener("click", resetForm);
 
+    var achievementsHaveSortOrder = true; // detected below; false if the one-time migration hasn't been run yet
+
     async function loadAchievements() {
-      var { data, error } = await supabaseClient.from("achievements").select("*").order("created_at", { ascending: false });
+      var result = await supabaseClient.from("achievements").select("*")
+        .order("sort_order", { ascending: true }).order("created_at", { ascending: false });
+      if (result.error) {
+        // sort_order column doesn't exist on this project yet — fall back
+        // so the page still works, just without reordering until
+        // supabase/migration-add-sort-order.sql is run.
+        achievementsHaveSortOrder = false;
+        result = await supabaseClient.from("achievements").select("*").order("created_at", { ascending: false });
+      } else {
+        achievementsHaveSortOrder = true;
+      }
+      var { data, error } = result;
+      currentAchievements = data || [];
+
       var list = document.getElementById("ac-list");
       if (error) { list.innerHTML = '<p class="admin-message error">' + error.message + '</p>'; return; }
       if (!data || data.length === 0) {
         list.innerHTML = '<p class="admin-empty">No achievements added yet.</p>';
         return;
       }
-      list.innerHTML = '<table class="admin-table"><thead><tr><th>Title</th><th>Year</th><th></th><th></th></tr></thead><tbody>' +
-        data.map(function (a) {
-          return "<tr><td>" + a.title + "</td><td>" + (a.year || "—") + "</td>" +
+      if (!achievementsHaveSortOrder) {
+        list.innerHTML = '<p class="admin-message info">Reordering isn\'t available yet — run supabase/migration-add-sort-order.sql once in your Supabase SQL Editor to enable Move Up/Down here.</p>';
+      } else {
+        list.innerHTML = "";
+      }
+      list.innerHTML += '<table class="admin-table"><thead><tr>' + (achievementsHaveSortOrder ? "<th></th>" : "") + '<th>Title</th><th>Year</th><th></th><th></th></tr></thead><tbody>' +
+        data.map(function (a, idx) {
+          return "<tr>" + (achievementsHaveSortOrder ? "<td class=\"row-actions\">" + reorderButtonsHtml(idx, data.length) + "</td>" : "") +
+            "<td>" + a.title + "</td><td>" + (a.year || "—") + "</td>" +
             '<td class="row-actions"><button class="admin-btn secondary" data-edit="' + a.id + '">Edit</button></td>' +
             '<td class="row-actions"><button class="admin-btn danger" data-delete="' + a.id + '">Delete</button></td></tr>';
         }).join("") + "</tbody></table>";
@@ -132,6 +155,7 @@
       list.querySelectorAll("[data-delete]").forEach(function (btn) {
         btn.addEventListener("click", function () { deleteItem(btn.getAttribute("data-delete")); });
       });
+      if (achievementsHaveSortOrder) wireReorderButtons(list, "achievements", data, loadAchievements);
     }
 
     function editItem(id, allData) {
@@ -179,6 +203,8 @@
           student_names: document.getElementById("ac-students").value.trim(),
           image_url: imageUrl
         };
+        // New achievements go to the end of the current order, not the front
+        if (!editingId && achievementsHaveSortOrder) payload.sort_order = nextSortOrder(currentAchievements);
 
         if (editingId) {
           var { error } = await supabaseClient.from("achievements").update(payload).eq("id", editingId);
